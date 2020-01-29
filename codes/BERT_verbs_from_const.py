@@ -7,7 +7,8 @@ import sys
 
 sys.path.append('..')
 args = sys.argv
-PATH = 'Path to the folder'
+with open("mypath.txt") as f:
+    PATH = f.read()
 
 def softmax(x):
     return torch.exp(x)/torch.sum(torch.exp(x))

@@ -5,7 +5,8 @@ import sys
 
 sys.path.append('..')
 args = sys.argv
-PATH = 'Path to the folder'
+with open("mypath.txt") as f:
+    PATH = f.read()
 
 with open(PATH + 'datafile/log_probs_good_do_'+args[1]+'.pkl','rb') as f:
     probs_good_do = pickle.load(f)
