@@ -7,7 +7,8 @@ import sys
 
 sys.path.append('..')
 args = sys.argv
-PATH = 'Path to the folder'
+with open("mypath.txt") as f:
+    PATH = f.read()
 
 with open(PATH+'datafile/hidden650_batch128_dropout0.2_lr20.0.pt', 'rb') as f:
     model = torch.load(f,map_location=torch.device('cpu'))
