@@ -32,7 +32,7 @@ for sentence in sentence_str:
     tokenized_text = sentence.split(" ")
     sent_prob = 0
     sent_len = len(sentence.split(" "))
-    for masked_index in range(3,sent_len):
+    for masked_index in range(3,sent_len-1):
         masked_text = tokenized_text.copy()
         masked_text[masked_index] = '[MASK]'
         trunc_text = masked_text[:masked_index+1]
@@ -44,7 +44,7 @@ for sentence in sentence_str:
         probs = predictions[0, masked_index]
         log_probs = torch.log(softmax(probs))
         prob = log_probs[tokenizer.convert_tokens_to_ids(tokenized_text[masked_index])].item()
-    sent_prob += prob
+        sent_prob += prob
     prob_list.append(sent_prob)
 
 #Save the data
