@@ -30,7 +30,7 @@ model.eval()
 with open(PATH + 'textfile/probs_lex_sematics.txt','w') as f:
     for sentence in sentence_str:
         tokenized_text = sentence.split(" ")
-        masked_index = 5
+        masked_index = 6
         masked_text = tokenized_text.copy()
         masked_text[masked_index] = '[MASK]'
         f.write(" ".join(masked_text))

@@ -24,8 +24,8 @@ with open(PATH + 'textfile/bad_do_'+args[1]+'.txt') as f:
     bad_text = f.read().split('\n')[:-1]
 
 
-good_verb = [sentence.split(" ")[2] for sentence in good_text]
-bad_verb = [sentence.split(" ")[2] for sentence in bad_text]
+good_verb = [sentence.split(" ")[3] for sentence in good_text]
+bad_verb = [sentence.split(" ")[3] for sentence in bad_text]
 red_good_verb = [good_verb[2*i] for i in range(int(len(good_verb)/2))]
 red_bad_verb = [bad_verb[2*i] for i in range(int(len(bad_verb)/2))]
 
