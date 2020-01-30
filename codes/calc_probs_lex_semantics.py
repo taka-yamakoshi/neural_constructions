@@ -50,4 +50,5 @@ with open(PATH + 'textfile/probs_lex_sematics.txt','w') as f:
             f.writelines('\t')
             f.write(str(prob))
             f.writelines('\n')
-
+        f.writelines('\n')
+        f.writelines('\n')

@@ -48,3 +48,5 @@ with open(PATH + 'textfile/probs_from_const_'+args[1]+'_'+args[2]+'.txt', 'w') a
             f.writelines('\t')
             f.write(str(prob))
             f.writelines('\n')
+        f.writelines('\n')
+        f.writelines('\n')
