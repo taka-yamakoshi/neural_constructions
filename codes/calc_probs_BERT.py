@@ -30,7 +30,7 @@ prob_list = []
 
 for sentence in sentence_str:
     tokenized_text = sentence.split(" ")
-    masked_index = 2
+    masked_index = 3
     masked_text = tokenized_text.copy()
     masked_text[masked_index] = '[MASK]'
     indexed_tokens = tokenizer.convert_tokens_to_ids(masked_text)

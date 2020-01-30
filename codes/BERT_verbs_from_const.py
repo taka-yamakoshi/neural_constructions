@@ -28,7 +28,7 @@ model.eval()
 with open(PATH + 'textfile/probs_from_const_'+args[1]+'_'+args[2]+'.txt', 'w') as f:
     for text in sentence_str:
         tokenized_text = text.split(" ")
-        masked_index = 2
+        masked_index = 3
         masked_text = tokenized_text.copy()
         masked_text[masked_index] = '[MASK]'
         f.write(" ".join(masked_text))
