@@ -8,9 +8,9 @@ args = sys.argv
 with open("mypath.txt") as f:
     PATH = f.read()
 
-with open(PATH + 'datafile/log_probs_bad_do_bert.pkl','rb') as f:
+with open(PATH + 'datafile/log_probs_transition_bad.pkl','rb') as f:
     probs_bad = pickle.load(f)
-with open(PATH + 'datafile/log_probs_bad_do_garden.pkl','rb') as f:
+with open(PATH + 'datafile/log_probs_transition_garden.pkl','rb') as f:
     probs_garden = pickle.load(f)
 
 def calculate_t(x,y):
