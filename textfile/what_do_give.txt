@@ -1,2 +1,2 @@
-[SEP] what did the man give her ? [SEP]
-[SEP] what did the woman give him ? [SEP]
+[SEP] what did the man report her ? [SEP]
+[SEP] what did the woman report him ? [SEP]
