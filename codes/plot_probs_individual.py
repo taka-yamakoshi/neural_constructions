@@ -10,12 +10,12 @@ with open("mypath.txt") as f:
 
 with open(PATH + 'datafile/log_probs_good_do_'+args[1]+'.pkl','rb') as f:
     probs_good_do = pickle.load(f)
-with open(PATH + 'datafile/log_probs_good_po_'+args[1]+'.pkl','rb') as f:
-    probs_good_po = pickle.load(f)
+with open(PATH + 'datafile/log_probs_good_pd_'+args[1]+'.pkl','rb') as f:
+    probs_good_pd = pickle.load(f)
 with open(PATH + 'datafile/log_probs_bad_do_'+args[1]+'.pkl','rb') as f:
     probs_bad_do = pickle.load(f)
-with open(PATH + 'datafile/log_probs_bad_po_'+args[1]+'.pkl','rb') as f:
-    probs_bad_po = pickle.load(f)
+with open(PATH + 'datafile/log_probs_bad_pd_'+args[1]+'.pkl','rb') as f:
+    probs_bad_pd = pickle.load(f)
 
 
 with open(PATH + 'textfile/good_do_'+args[1]+'.txt') as f:
@@ -29,8 +29,8 @@ bad_verb = [sentence.split(" ")[3] for sentence in bad_text]
 red_good_verb = [good_verb[2*i] for i in range(int(len(good_verb)/2))]
 red_bad_verb = [bad_verb[2*i] for i in range(int(len(bad_verb)/2))]
 
-good_log_ratio = [probs_good_do[j] - probs_good_po[j] for j in range(len(probs_good_do))]
-bad_log_ratio = [probs_bad_do[j] - probs_bad_po[j] for j in range(len(probs_bad_do))]
+good_log_ratio = [probs_good_do[j] - probs_good_pd[j] for j in range(len(probs_good_do))]
+bad_log_ratio = [probs_bad_do[j] - probs_bad_pd[j] for j in range(len(probs_bad_do))]
 red_good_log_ratio = [(good_log_ratio[2*i]+good_log_ratio[2*i+1])/2 for i in range(len(red_good_verb))]
 red_bad_log_ratio = [(bad_log_ratio[2*i]+bad_log_ratio[2*i+1])/2 for i in range(len(red_bad_verb))]
 

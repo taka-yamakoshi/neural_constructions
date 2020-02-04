@@ -10,12 +10,12 @@ with open("mypath.txt") as f:
 
 with open(PATH + 'datafile/sent_log_probs_good_do_bert.pkl','rb') as f:
     probs_pron_do = pickle.load(f)
-with open(PATH + 'datafile/sent_log_probs_good_po_bert.pkl','rb') as f:
-    probs_pron_po = pickle.load(f)
+with open(PATH + 'datafile/sent_log_probs_good_pd_bert.pkl','rb') as f:
+    probs_pron_pd = pickle.load(f)
 with open(PATH + 'datafile/sent_log_probs_good_do_'+args[1]+'.pkl','rb') as f:
     probs_control_do = pickle.load(f)
-with open(PATH + 'datafile/sent_log_probs_good_po_'+args[1]+'.pkl','rb') as f:
-    probs_control_po = pickle.load(f)
+with open(PATH + 'datafile/sent_log_probs_good_pd_'+args[1]+'.pkl','rb') as f:
+    probs_control_pd = pickle.load(f)
 
 def calculate_t(x,y):
     x_ave = np.average(x)
@@ -26,8 +26,8 @@ def calculate_t(x,y):
     return (x_ave-y_ave)/(np.sqrt(pooled_var*(1/x.size+ 1/y.size)))
 
 
-pron_log_ratio = [probs_pron_do[j] - probs_pron_po[j] for j in range(len(probs_pron_do))]
-control_log_ratio = [probs_control_do[j] - probs_control_po[j] for j in range(len(probs_control_do))]
+pron_log_ratio = [probs_pron_do[j] - probs_pron_pd[j] for j in range(len(probs_pron_do))]
+control_log_ratio = [probs_control_do[j] - probs_control_pd[j] for j in range(len(probs_control_do))]
 print("t = " + str(calculate_t(np.array(pron_log_ratio),np.array(control_log_ratio))))
 
 fig, axis = plt.subplots()

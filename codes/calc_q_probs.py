@@ -45,7 +45,8 @@ for sentence in sentence_str:
         log_probs = torch.log(softmax(probs))
         prob = log_probs[tokenizer.convert_tokens_to_ids(tokenized_text[masked_index])].item()
         sent_prob += prob
-    prob_list.append(sent_prob/(sent_len-7))
+    prob_list.append(sent_prob)
+    print(sent_prob)
 #Save the data
 with open(PATH + 'datafile/sent_log_probs_' + args[1] + '_' + args[2] + '.pkl','wb') as f:
     pickle.dump(np.array(prob_list),f)
