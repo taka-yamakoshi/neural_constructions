@@ -32,7 +32,7 @@ for sentence in sentence_str:
     tokenized_text = sentence.split(" ")
     sent_prob = 0
     sent_len = len(sentence.split(" "))
-    for masked_index in range(4,sent_len-1):
+    for masked_index in range(2,sent_len-1):
         masked_text = tokenized_text.copy()
         masked_text[masked_index] = '[MASK]'
         trunc_text = masked_text[:masked_index+1]
