@@ -24,7 +24,7 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 model.eval()
 
-
+prob_list = []
 with open(PATH + 'textfile/probs_from_const_'+args[1]+'_'+args[2]+'.txt', 'w') as f:
     for text in sentence_str:
         tokenized_text = text.split(" ")
@@ -40,6 +40,7 @@ with open(PATH + 'textfile/probs_from_const_'+args[1]+'_'+args[2]+'.txt', 'w') a
             predictions = outputs[0]
         probs = predictions[0, masked_index]
         log_probs = torch.log(softmax(probs)).numpy()
+        prob_list.append(list(log_probs))
         order = np.argsort(log_probs)[::-1]
         # write out top 50 verbs for each construction
         for id in order[:50]:
@@ -50,3 +51,5 @@ with open(PATH + 'textfile/probs_from_const_'+args[1]+'_'+args[2]+'.txt', 'w') a
             f.writelines('\n')
         f.writelines('\n')
         f.writelines('\n')
+with open(PATH + 'datafile/probs_from_const_'+args[1]+'_'+args[2]+'.pkl','wb') as f:
+    pickle.dump(np.array(prob_list),f)

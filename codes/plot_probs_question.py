@@ -8,13 +8,13 @@ args = sys.argv
 with open("mypath.txt") as f:
     PATH = f.read()
 
-with open(PATH + 'datafile/sent_log_probs_who_do_give.pkl','rb') as f:
+with open(PATH + 'datafile/sent_log_probs_who_do.pkl','rb') as f:
     probs_who_do = pickle.load(f)
-with open(PATH + 'datafile/sent_log_probs_who_pd_give.pkl','rb') as f:
+with open(PATH + 'datafile/sent_log_probs_who_pd.pkl','rb') as f:
     probs_who_pd = pickle.load(f)
-with open(PATH + 'datafile/sent_log_probs_what_do_give.pkl','rb') as f:
+with open(PATH + 'datafile/sent_log_probs_what_do.pkl','rb') as f:
     probs_what_do = pickle.load(f)
-with open(PATH + 'datafile/sent_log_probs_what_pd_give.pkl','rb') as f:
+with open(PATH + 'datafile/sent_log_probs_what_pd.pkl','rb') as f:
     probs_what_pd = pickle.load(f)
 
 def calculate_t(x,y):
@@ -27,7 +27,6 @@ def calculate_t(x,y):
 
 who_log_ratio = [probs_who_do[j] - probs_who_pd[j] for j in range(len(probs_who_do))]
 what_log_ratio = [probs_what_do[j] - probs_what_pd[j] for j in range(len(probs_what_do))]
-print(np.array(who_log_ratio))
 
 print("t = " + str(calculate_t(np.array(who_log_ratio),np.array(what_log_ratio))))
 
