@@ -17,6 +17,15 @@ with open(PATH + 'datafile/sent_log_probs_bad_do_bert.pkl','rb') as f:
 with open(PATH + 'datafile/sent_log_probs_bad_pd_bert.pkl','rb') as f:
     probs_bad_pd = pickle.load(f)
 
+with open(PATH + 'datafile/sent_log_probs_good_do_def_art.pkl','rb') as f:
+    probs_good_do_def = pickle.load(f)
+with open(PATH + 'datafile/sent_log_probs_good_pd_def_art.pkl','rb') as f:
+    probs_good_pd_def = pickle.load(f)
+with open(PATH + 'datafile/sent_log_probs_bad_do_def_art.pkl','rb') as f:
+    probs_bad_do_def = pickle.load(f)
+with open(PATH + 'datafile/sent_log_probs_bad_pd_def_art.pkl','rb') as f:
+    probs_bad_pd_def = pickle.load(f)
+
 with open(PATH + 'datafile/sent_log_probs_good_do_indef_art.pkl','rb') as f:
     probs_good_do_indef = pickle.load(f)
 with open(PATH + 'datafile/sent_log_probs_good_pd_indef_art.pkl','rb') as f:
@@ -55,6 +64,8 @@ def calculate_t(x,y):
 
 good_log_ratio = [probs_good_do[j] - probs_good_pd[j] for j in range(len(probs_good_do))]
 bad_log_ratio = [probs_bad_do[j] - probs_bad_pd[j] for j in range(len(probs_bad_do))]
+good_def_log_ratio = [probs_good_do_def[j] - probs_good_pd_def[j] for j in range(len(probs_good_do_def))]
+bad_def_log_ratio = [probs_bad_do_def[j] - probs_bad_pd_def[j] for j in range(len(probs_bad_do_def))]
 good_indef_log_ratio = [probs_good_do_indef[j] - probs_good_pd_indef[j] for j in range(len(probs_good_do_indef))]
 bad_indef_log_ratio = [probs_bad_do_indef[j] - probs_bad_pd_indef[j] for j in range(len(probs_bad_do_indef))]
 good_len_log_ratio = [probs_good_do_len[j] - probs_good_pd_len[j] for j in range(len(probs_good_do_len))]
@@ -62,6 +73,8 @@ bad_len_log_ratio = [probs_bad_do_len[j] - probs_bad_pd_len[j] for j in range(le
 good_indef_len_log_ratio = [probs_good_do_indef_len[j] - probs_good_pd_indef_len[j] for j in range(len(probs_good_do_indef_len))]
 bad_indef_len_log_ratio = [probs_bad_do_indef_len[j] - probs_bad_pd_indef_len[j] for j in range(len(probs_bad_do_indef_len))]
 print("good vs bad: t = " + str(calculate_t(np.array(good_log_ratio),np.array(bad_log_ratio))))
+print("good vs good_def: t = " + str(calculate_t(np.array(good_log_ratio),np.array(good_def_log_ratio))))
+print("good vs bad_def: t = " + str(calculate_t(np.array(good_log_ratio),np.array(bad_def_log_ratio))))
 print("good vs good_indef: t = " + str(calculate_t(np.array(good_log_ratio),np.array(good_indef_log_ratio))))
 print("good vs bad_indef: t = " + str(calculate_t(np.array(good_log_ratio),np.array(bad_indef_log_ratio))))
 print("good vs good_len: t = " + str(calculate_t(np.array(good_log_ratio),np.array(good_len_log_ratio))))
@@ -71,11 +84,11 @@ print("good vs bad_indef_len: t = " + str(calculate_t(np.array(good_log_ratio),n
 
 
 fig, axis = plt.subplots()
-probs = [good_log_ratio,bad_log_ratio,good_indef_log_ratio,bad_indef_log_ratio,good_len_log_ratio,bad_len_log_ratio, good_indef_len_log_ratio, bad_indef_len_log_ratio]
+probs = [good_log_ratio,bad_log_ratio,good_def_log_ratio,bad_def_log_ratio,good_indef_log_ratio,bad_indef_log_ratio,good_len_log_ratio,bad_len_log_ratio, good_indef_len_log_ratio, bad_indef_len_log_ratio,list(np.array(good_indef_log_ratio) + np.array(good_len_log_ratio) - np.array(good_def_log_ratio)),list(np.array(bad_indef_log_ratio) + np.array(bad_len_log_ratio) - np.array(bad_def_log_ratio))]
 matrix = [[calculate_t(np.array(prob_1),np.array(prob_2)) for prob_1 in probs] for prob_2 in probs]
 
-plt.bar(np.arange(8),np.array([np.average(probs[i]) for i in range(8)]),yerr =np.array([np.std(probs[i])/np.sqrt(len(probs[i])) for i in range(8)]))
-plt.xticks([0,1,2,3,4,5,6,7],["A","NA","A with indefinite articles","NA with indefinite articles","A with long noun phrases","NA with long noun phrases","A with long nouns with indefinite articles","NA with long nouns with indefinite articles"],rotation=5)
+plt.bar(np.arange(12),np.array([np.average(probs[i]) for i in range(12)]),yerr =np.array([np.std(probs[i])/np.sqrt(len(probs[i])) for i in range(12)]))
+plt.xticks([0,1,2,3,4,5,6,7,8,9,10,11],["A w/ PRON","NA w/ PRON","A w/ DEF","NA w/ DEF","A w/ INDEF","NA w/ INDEF","A w/ LongN","NA w/ LongN","A w/ INDEF LongN","NA w/ INDEF LongN","Estimated A w/ INDEF LongN", "Estimated NA w/ INDEF LongN"],rotation=10)
 axis.set_xlabel("Types of verbs/objects")
 axis.set_ylabel("Log likelihood ratio")
 plt.gca().invert_yaxis()

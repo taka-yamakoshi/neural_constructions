@@ -30,6 +30,6 @@ plt.xticks([0,1],["Good","Bad"])
 axis.set_xlabel("Types of Constructions")
 axis.set_ylabel("Log Probability")
 plt.gca().invert_yaxis()
-axis.set_ylim(-30,-40)
+axis.set_ylim(-25,-35)
 plt.show()
 
