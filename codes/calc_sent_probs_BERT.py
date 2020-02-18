@@ -32,11 +32,10 @@ for sentence in sentence_str:
     tokenized_text = sentence.split(" ")
     sent_prob = 0
     sent_len = len(sentence.split(" "))
-    for masked_index in range(2,sent_len-1):
+    for masked_index in range(1,sent_len-1):
         masked_text = tokenized_text.copy()
         masked_text[masked_index] = '[MASK]'
-        trunc_text = masked_text[:masked_index+1]
-        indexed_tokens = tokenizer.convert_tokens_to_ids(trunc_text)
+        indexed_tokens = tokenizer.convert_tokens_to_ids(masked_text)
         tokens_tensor = torch.tensor([indexed_tokens])
         with torch.no_grad():
             outputs = model(tokens_tensor)
@@ -45,6 +44,7 @@ for sentence in sentence_str:
         log_probs = torch.log(softmax(probs))
         prob = log_probs[tokenizer.convert_tokens_to_ids(tokenized_text[masked_index])].item()
         sent_prob += prob
+    
     prob_list.append(sent_prob)
 #Save the data
 with open(PATH + 'datafile/sent_log_probs_' + args[1] + '_' + args[2] + '.pkl','wb') as f:
