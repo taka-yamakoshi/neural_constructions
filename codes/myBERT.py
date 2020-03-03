@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import pickle
 from transformers import BertTokenizer, BertModel, BertForMaskedLM
@@ -14,7 +15,7 @@ def softmax(x):
     return torch.exp(x)/torch.sum(torch.exp(x))
 
 def gelu(x):
-    return 0.5*x*(1+torch.tanh(np.sqrt(2/np.pi)*(x + 0.044715*x**3)))
+    return x*0.5*(1.0+torch.erf(x/math.sqrt(2.0)))
 
 def attention(query,key,value):
     raw_attn = torch.mm(query.T,key)
