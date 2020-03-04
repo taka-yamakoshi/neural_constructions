@@ -22,7 +22,7 @@ verb_type = ['good','bad']
 type = ['do','pd']
 for i in range(2):
     for j in range(2):
-        with open(PATH +'textfile/'+ verb_type[i] + '_'+type[j]+'test.txt','w') as f:
+        with open(PATH +'textfile/'+ verb_type[i] + '_'+type[j]+'_test.txt','w') as f:
             if j == 0:
                 for pair in pairs[i]:
                     for recipient in recipients:
