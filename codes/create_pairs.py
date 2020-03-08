@@ -12,7 +12,7 @@ themes = ["box","news","food","money","land","salt","dish","task","support","war
 
 verb_types = ["good","bad"]
 for i, verb_type in enumerate(verb_types):
-    with open(PATH+"textfile/verb_theme_pairs_"+verb_type+".txt",'w') as f:
+    with open(PATH+"textfile/verb_theme_pairs_"+verb_type+"_all.txt",'w') as f:
         for verb in verbs[i]:
             for theme in themes:
                 f.write(verb+" "+theme)
