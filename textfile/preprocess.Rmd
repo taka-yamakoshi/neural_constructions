@@ -1,0 +1,76 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+alternating_pairs = read_delim('./verb_theme_pairs_bad.txt', 
+                               col_names = c('verb', 'theme'),
+                               delim = ' ') %>%
+  mutate(verbClass = 'non-alternating') 
+
+nonalterntaing_pairs = read_delim('./verb_theme_pairs_good.txt', 
+                                  col_names = c('verb', 'theme'),
+                                  delim = ' ') %>%
+  mutate(verbClass= 'alternating')
+
+pairs = bind_rows(alternating_pairs,
+                  nonalterntaing_pairs) %>%
+  rowwise() %>%
+  mutate(theme = paste0(c('<indef>', theme), collapse=' '))
+
+subjects <- data.frame(subject = c('She', 'He'))
+```
+
+```{r}
+recipient_pronouns <- c('her', 'him')
+recipient_nouns <- c('man', 'woman', 'teacher', 'friend', 'boy', 'girl')
+definites <- recipient_nouns %>% map_chr(~paste0('the ', .x))
+indefinites <- recipient_nouns %>% map_chr(~paste0('a ', .x))
+
+raw_lengtheners <- c('from work', 'from the club', 'waiting in the car',
+                     'wearing the green jacket', 'wearing the hat')
+
+lengtheners <- raw_lengtheners %>%
+  map_chr(~paste0('who was ', .x)) %>%
+  c(raw_lengtheners)
+
+longdefinites <- cross2(definites, lengtheners) %>% 
+  map_chr(paste, collapse = " ")
+
+longindefinites <- cross2(indefinites, lengtheners) %>% 
+  map_chr(paste, collapse = " ")
+```
+
+Put all recipients together
+
+```{r}                         
+recipients <- bind_rows(
+  data.frame(recipient = recipient_pronouns, 
+             taskID = rep('pronoun', length(recipient_pronouns))),
+  data.frame(recipient = definites, 
+             taskID = rep('shortDefinite', length(definites))),
+  data.frame(recipient = indefinites, 
+             taskID = rep('shortIndefinite', length(indefinites))),
+  data.frame(recipient = longdefinites, 
+             taskID = rep('longDefinite', length(longdefinites))),
+  data.frame(recipient = longindefinites, 
+             taskID = rep('longInefinite', length(longindefinites)))
+)
+
+out <- pairs %>% 
+  merge(recipients) %>%
+  merge(subjects) %>%
+  # remove slightly confusing 'she gave her' and 'he gave him' sentences
+  filter(!(subject == 'She' & recipient == 'her')) %>%
+  filter(!(subject == 'He' & recipient == 'him')) %>%
+  unite(DOsentence, subject, verb, recipient, theme, sep = ' ', remove = F) %>%
+  mutate(to = 'to') %>%
+  unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) 
+
+write_csv(out, './generated_pairs.csv')
+```
