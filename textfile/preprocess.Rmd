@@ -8,41 +8,31 @@ library(tidyverse)
 ```
 
 ```{r}
-alternating_pairs = read_delim('./verb_theme_pairs_bad.txt', 
-                               col_names = c('verb', 'theme'),
-                               delim = ' ') %>%
-  mutate(verbClass = 'non-alternating') 
-
-nonalterntaing_pairs = read_delim('./verb_theme_pairs_good.txt', 
-                                  col_names = c('verb', 'theme'),
-                                  delim = ' ') %>%
-  mutate(verbClass= 'alternating')
-
-pairs = bind_rows(alternating_pairs,
-                  nonalterntaing_pairs) %>%
+pairs = read_csv('./verblists.csv') %>%
   rowwise() %>%
-  mutate(theme = paste0(c('<indef>', theme), collapse=' '))
-
-subjects <- data.frame(subject = c('She', 'He'))
+  mutate(subject = ifelse(grepl("her", def_1) | grepl("her", def_2),
+                          'She', sample(c('She', 'He')))) %>%
+  select(-`extra theme`, -POSSESSIVE, -`plural recipent`,-notes)
 ```
 
 ```{r}
 recipient_pronouns <- c('her', 'him')
-recipient_nouns <- c('man', 'woman', 'teacher', 'friend', 'boy', 'girl')
+recipient_nouns <- c('man', 'woman')
 definites <- recipient_nouns %>% map_chr(~paste0('the ', .x))
 indefinites <- recipient_nouns %>% map_chr(~paste0('a ', .x))
 
-raw_lengtheners <- c('from work', 'from the club', 'waiting in the car',
-                     'wearing the green jacket', 'wearing the hat')
-
-lengtheners <- raw_lengtheners %>%
+definite_lengtheners <- c('from work', 'wearing the hat') %>%
   map_chr(~paste0('who was ', .x)) %>%
-  c(raw_lengtheners)
+  c('from work', 'wearing the hat')
 
-longdefinites <- cross2(definites, lengtheners) %>% 
+indefinite_lengtheners <- c('from work', 'wearing a hat') %>%
+  map_chr(~paste0('who was ', .x)) %>%
+   c('from work', 'wearing a hat') 
+
+longdefinites <- cross2(definites, definite_lengtheners) %>% 
   map_chr(paste, collapse = " ")
 
-longindefinites <- cross2(indefinites, lengtheners) %>% 
+longindefinites <- cross2(indefinites, indefinite_lengtheners) %>% 
   map_chr(paste, collapse = " ")
 ```
 
@@ -51,26 +41,29 @@ Put all recipients together
 ```{r}                         
 recipients <- bind_rows(
   data.frame(recipient = recipient_pronouns, 
-             taskID = rep('pronoun', length(recipient_pronouns))),
+             recipient_id = rep('pronoun', length(recipient_pronouns))),
   data.frame(recipient = definites, 
-             taskID = rep('shortDefinite', length(definites))),
+             recipient_id = rep('shortDefinite', length(definites))),
   data.frame(recipient = indefinites, 
-             taskID = rep('shortIndefinite', length(indefinites))),
+             recipient_id = rep('shortIndefinite', length(indefinites))),
   data.frame(recipient = longdefinites, 
-             taskID = rep('longDefinite', length(longdefinites))),
+             recipient_id = rep('longDefinite', length(longdefinites))),
   data.frame(recipient = longindefinites, 
-             taskID = rep('longInefinite', length(longindefinites)))
+             recipient_id = rep('longIndefinite', length(longindefinites)))
 )
 
 out <- pairs %>% 
-  merge(recipients) %>%
-  merge(subjects) %>%
+  gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
+  separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
   # remove slightly confusing 'she gave her' and 'he gave him' sentences
+  merge(recipients) %>%
   filter(!(subject == 'She' & recipient == 'her')) %>%
   filter(!(subject == 'He' & recipient == 'him')) %>%
   unite(DOsentence, subject, verb, recipient, theme, sep = ' ', remove = F) %>%
   mutate(to = 'to') %>%
-  unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) 
+  unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) %>% 
+  group_by(verb_id,theme_id,recipient_id) %>%
+  sample_n(1)
 
 write_csv(out, './generated_pairs.csv')
 ```
