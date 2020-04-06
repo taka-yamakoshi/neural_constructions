@@ -8,11 +8,15 @@ library(tidyverse)
 ```
 
 ```{r}
+female_names = c('Mary', 'Linda', 'Maria', 'Alice')
+male_names = c('John', 'Bob', 'Michael', 'Juan')
 pairs = read_csv('./verblists.csv') %>%
   rowwise() %>%
   mutate(subject = ifelse(grepl("her", def_1) | grepl("her", def_2),
-                          'She', sample(c('She', 'He')))) %>%
-  select(-`extra theme`, -POSSESSIVE, -`plural recipent`,-notes)
+                          sample(female_names), 
+                          sample(c(female_names, male_names))),
+         plural = !is.na(`plural recipent`)) %>%
+  select(-`extra theme`, -`plural recipent`, -POSSESSIVE, -notes)
 ```
 
 ```{r}
@@ -50,15 +54,23 @@ recipients <- bind_rows(
              recipient_id = rep('longDefinite', length(longdefinites))),
   data.frame(recipient = longindefinites, 
              recipient_id = rep('longIndefinite', length(longindefinites)))
-)
+) %>% 
+  mutate(plural = F) %>%
+  bind_rows(
+    data.frame(recipient = c('them', 'the team', 'a team', 
+                             'the team from work', 'a team from work'), 
+               recipient_id = c('pronoun', 'shortDefinite','shortIndefinite',
+                                'longDefinite','longIndefinite'),
+               plural = rep(c(T), 5))
+  ) 
 
 out <- pairs %>% 
   gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
   separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
+  merge(recipients, by = c('plural')) %>%
   # remove slightly confusing 'she gave her' and 'he gave him' sentences
-  merge(recipients) %>%
-  filter(!(subject == 'She' & recipient == 'her')) %>%
-  filter(!(subject == 'He' & recipient == 'him')) %>%
+  filter(!(subject %in% female_names & recipient == 'her')) %>%
+  filter(!(subject %in% male_names & recipient == 'him')) %>%
   unite(DOsentence, subject, verb, recipient, theme, sep = ' ', remove = F) %>%
   mutate(to = 'to') %>%
   unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) %>% 
