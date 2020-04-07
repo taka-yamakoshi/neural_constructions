@@ -3,30 +3,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from transformers import BertTokenizer, BertModel, BertForMaskedLM
+import sys
 
+sys.path.append('..')
+args = sys.argv
+with open("mypath.txt") as f:
+    PATH = f.read()
 
 def softmax(x):
     return torch.exp(x)/torch.sum(torch.exp(x))
 
-sentence = "[CLS] the man brought her the box . [SEP]"
+#Load sentences
+sentence_file = open(PATH+'textfile/good_' + args[1] +'_corpus.txt')
+sentence_str = sentence_file.read()
+sentence_file.close()
+sentence_str = sentence_str.split('\n')[:-1]
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 model.eval()
 
-tokenized_text = sentence.split(" ")
-masked_index = 3
-masked_text = tokenized_text.copy()
-masked_text[masked_index] = '[MASK]'
-indexed_tokens = tokenizer.convert_tokens_to_ids(masked_text)
-tokens_tensor = torch.tensor([indexed_tokens])
-with torch.no_grad():
-    #print(model.config)
-    outputs = model(tokens_tensor)
-    print(outputs[2][0].shape)
-    predictions = outputs[0]
+verb_list = ["showed", "told", "guaranteed", "lent", "offered", "loaned", "left", "promised", "slipped", "wrote", "taught", "gave", "fed", "paid", "voted", "handed", "served", "tossed", "sent", "sold"]
 
-probs = predictions[0, masked_index]
-log_probs = torch.log(softmax(probs))
-print(tokenizer.convert_ids_to_tokens([torch.argmax(log_probs)]))
+hidden_states = []
+for i, verb in enumerate(verb_list):
+    for j in range(10):
+        sentence = sentence_str[10*i+j]
+        tokenized_sentence = tokenizer.encode(sentence)
+        verb_pos = tokenized_sentence.index(tokenizer.encode(verb)[1:-1][0])
+        tokenized_sentence[verb_pos] = tokenizer.encode("[MASK]")[1:-1][0]
+        input_tensor = torch.tensor([tokenized_sentence])
+        with torch.no_grad():
+            outputs = model(input_tensor)
+            state = []
+            for layer in outputs[1]:
+                state.append(layer[0][verb_pos])
+            hidden_states.append(state)
 
+with open(PATH + 'datafile/hidden_states_' + args[1] + '.pkl','wb') as f:
+    pickle.dump(hidden_states,f)
