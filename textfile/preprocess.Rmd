@@ -12,10 +12,10 @@ female_names = c('Mary', 'Linda', 'Maria', 'Alice')
 male_names = c('John', 'Bob', 'Michael', 'Juan')
 pairs = read_csv('./verblists.csv') %>%
   rowwise() %>%
-  mutate(subject = ifelse(grepl("her", def_1) | grepl("her", def_2),
-                          sample(female_names), 
-                          sample(c(female_names, male_names))),
-         plural = !is.na(`plural recipent`)) %>%
+  mutate(subject = ifelse(grepl("her", theme), sample(female_names), 
+                          sample(c(female_names, male_names)))) %>%
+
+  mutate(plural = !is.na(`plural recipent`)) %>%
   select(-`extra theme`, -`plural recipent`, -POSSESSIVE, -notes)
 ```
 
@@ -68,6 +68,9 @@ out <- pairs %>%
   gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
   separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
   merge(recipients, by = c('plural')) %>%
+  rowwise() %>%
+  mutate(subject = ifelse(grepl("her", theme), sample(female_names), 
+                          sample(c(female_names, male_names)))) %>%
   # remove slightly confusing 'she gave her' and 'he gave him' sentences
   filter(!(subject %in% female_names & recipient == 'her')) %>%
   filter(!(subject %in% male_names & recipient == 'him')) %>%
