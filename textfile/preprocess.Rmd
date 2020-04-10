@@ -8,15 +8,13 @@ library(tidyverse)
 ```
 
 ```{r}
-female_names = c('Mary', 'Linda', 'Maria', 'Alice')
-male_names = c('John', 'Bob', 'Michael', 'Juan')
 pairs = read_csv('./verblists.csv') %>%
-  rowwise() %>%
-  mutate(subject = ifelse(grepl("her", theme), sample(female_names), 
-                          sample(c(female_names, male_names)))) %>%
-
   mutate(plural = !is.na(`plural recipent`)) %>%
-  select(-`extra theme`, -`plural recipent`, -POSSESSIVE, -notes)
+  select(-`extra theme`, -`plural recipent`, -POSSESSIVE, -notes) %>%
+  gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
+  separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
+  mutate(takes_female = grepl("her", theme))
+
 ```
 
 ```{r}
@@ -63,14 +61,20 @@ recipients <- bind_rows(
                                 'longDefinite','longIndefinite'),
                plural = rep(c(T), 5))
   ) 
+```
 
-out <- pairs %>% 
-  gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
-  separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
+```{r}
+female_names = c('Mary', 'Linda', 'Maria', 'Alice')
+male_names = c('John', 'Bob', 'Michael', 'Juan')
+subjects = data.frame(subject = c(female_names, female_names, male_names),
+                      takes_female = c(rep(T, length(female_names)),
+                                       rep(F, length(female_names) + length(male_names))))
+```
+
+```{r}
+pairs %>%
   merge(recipients, by = c('plural')) %>%
-  rowwise() %>%
-  mutate(subject = ifelse(grepl("her", theme), sample(female_names), 
-                          sample(c(female_names, male_names)))) %>%
+  merge(subjects, by = c('takes_female')) %>%
   # remove slightly confusing 'she gave her' and 'he gave him' sentences
   filter(!(subject %in% female_names & recipient == 'her')) %>%
   filter(!(subject %in% male_names & recipient == 'him')) %>%
