@@ -53,6 +53,7 @@ test_PD = []
 for id in random_pick:
     train_DO.extend(hidden_DO[10*id:10*(id+1)])
     train_PD.extend(hidden_PD[10*id:10*(id+1)])
+
 for id in range(len(verb_list)):
     if id not in random_pick:
         test_DO.extend(hidden_DO[10*id:10*(id+1)])
@@ -79,7 +80,7 @@ for layer_num in range(13):
         new_performance = 0
         prev_performance = 0
         epoch = 0
-        while new_performance > prev_performance-0.003 and epoch < 50:
+        while new_performance > prev_performance-0.05 and epoch < 50:
             random_seq = np.random.permutation(np.arange(len(train_data)))
             shuffled_x_data = [train_data[random_id] for random_id in random_seq]
             shuffled_t_data = [train_label[random_id] for random_id in random_seq]
@@ -89,7 +90,6 @@ for layer_num in range(13):
             t_test = shuffled_t_data[250:]
             x_batch = batchfy(x_train,batch_num)
             t_batch = batchfy(t_train,batch_num)
-            prev_performance = np.max(np.array([new_performance,prev_performance]))
             total_loss = 0
             for i in range(batch_num):
                 for x,t in zip(x_batch[i],t_batch[i]):
@@ -112,6 +112,7 @@ for layer_num in range(13):
                     j+=1
                 k+=1
             new_performance = j/k
+            prev_performance = np.max(np.array([new_performance,prev_performance]))
             epoch += 1
         param["head_" + str(head_num)]= model.state_dict()
         print(new_performance)

@@ -36,9 +36,9 @@ for i, verb in enumerate(verb_list):
         with torch.no_grad():
             outputs = model(input_tensor)
             state = []
-            for layer in outputs[1]:
-                state.append(layer[0][verb_pos])
-            hidden_states.append(state)
+        for layer in outputs[1]:
+            state.append(layer[0][verb_pos])
+        hidden_states.append(state)
 
 with open(PATH + 'datafile/hidden_states_' + args[1] + '.pkl','wb') as f:
     pickle.dump(hidden_states,f)

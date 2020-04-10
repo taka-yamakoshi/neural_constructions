@@ -1,12 +1,6 @@
-import torch
-from torch.autograd import Variable
-import torch.nn as nn
-import torch.nn.functional as F
-from transformers import BertTokenizer, BertModel, BertForMaskedLM
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-import random
 import sys
 
 sys.path.append('..')
