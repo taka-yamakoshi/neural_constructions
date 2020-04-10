@@ -72,7 +72,7 @@ subjects = data.frame(subject = c(female_names, female_names, male_names),
 ```
 
 ```{r}
-pairs %>%
+out <- pairs %>%
   merge(recipients, by = c('plural')) %>%
   merge(subjects, by = c('takes_female')) %>%
   # remove slightly confusing 'she gave her' and 'he gave him' sentences
@@ -82,7 +82,13 @@ pairs %>%
   mutate(to = 'to') %>%
   unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) %>% 
   group_by(verb_id,theme_id,recipient_id) %>%
-  sample_n(1)
+  sample_n(1) %>%
+  mutate(trial_set = c(''))
 
 write_csv(out, './generated_pairs.csv')
+```
+
+```{r}
+write(jsonlite::toJSON(out), file = './generated_pairs.json')
+write(jsonlite::toJSON(out %>% ungroup() %>% sample_n(50)), file = './example_trials.json')
 ```
