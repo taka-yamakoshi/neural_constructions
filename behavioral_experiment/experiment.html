@@ -126,7 +126,6 @@
         <h3>Sentence B:</h3> \
         <p>" + sentenceB + ".</p>\
         <p>Which sentence would you prefer to say?\n</p>";
-        
         var trial = {
           type: "html-slider-response",
           stimulus: sentence_stimulus,
@@ -138,7 +137,7 @@
 
         timeline.push(trial)
       })
-      
+
       var exit_survey = {
         type: 'survey-text',
         questions: [
@@ -161,6 +160,7 @@
 
       jsPsych.init({
         timeline: timeline,
+        show_progress_bar: true,
         on_finish : function(data) {
           // At the end of the experiment, submit to turk
           // Record number of quiz attempts
