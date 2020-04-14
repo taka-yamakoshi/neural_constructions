@@ -16,11 +16,16 @@ with open("mypath.txt") as f:
 
 def softmax(x):
     return torch.exp(x)/torch.sum(torch.exp(x))
+def batchfy(train_data,batch_num):
+    batch_size = int(len(train_data)/batch_num)
+    return [train_data[batch_size*i:batch_size*(i+1)] for i in range(batch_num)]
 
+#Load the model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 model.eval()
 
+#Load the hidden states
 with open(PATH + 'datafile/hidden_states_DO.pkl','rb') as f:
     hidden_DO = pickle.load(f)
 with open(PATH + 'datafile/hidden_states_PD.pkl','rb') as f:
@@ -29,12 +34,7 @@ with open(PATH + 'datafile/hidden_states_PD.pkl','rb') as f:
 verb_list = ["showed", "told", "guaranteed", "lent", "offered", "loaned", "left", "promised", "slipped", "wrote", "taught", "gave", "fed", "paid", "voted", "handed", "served", "tossed", "sent", "sold"]
 
 
-def batchfy(train_data,batch_num):
-    batch_size = int(len(train_data)/batch_num)
-    return [train_data[batch_size*i:batch_size*(i+1)] for i in range(batch_num)]
-
-
-
+#Classifier
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -44,7 +44,7 @@ class Net(nn.Module):
         x = self.layer(x)
         return torch.tanh(x)
 
-
+#Randomly separate the sentences for training and test
 random_pick = random.sample([i for i in range(20)],15)
 train_DO = []
 test_DO = []
@@ -60,7 +60,7 @@ for id in range(len(verb_list)):
         test_PD.extend(hidden_PD[10*id:10*(id+1)])
 
 
-
+#Train the classfier
 batch_num = 10
 performance = np.zeros((13,12))
 params = {}
@@ -119,12 +119,14 @@ for layer_num in range(13):
         performance[layer_num][head_num] = new_performance
     params["layer_"+str(layer_num)] = param
 
+
+#Dump the train performance and parameters
 with open(PATH + 'datafile/train_performance.pkl','wb') as f:
     pickle.dump(performance,f)
 with open(PATH + 'datafile/params.pkl','wb') as f:
     pickle.dump(params,f)
 
-
+#Calculate performance on the test set
 test_performance = np.zeros((13,12))
 for layer_num in range(13):
     for head_num in range(12):
@@ -137,6 +139,6 @@ for layer_num in range(13):
         PD_performance = np.array([(torch.dot(weight,PD_vec)+bias).item() for PD_vec in PD_data]) < 0
         test_performance[layer_num][head_num] = (np.sum(DO_performance)+np.sum(PD_performance))/100
 
-
+#Dump the test performance
 with open(PATH + 'datafile/test_performance.pkl','wb') as f:
     pickle.dump(test_performance,f)
