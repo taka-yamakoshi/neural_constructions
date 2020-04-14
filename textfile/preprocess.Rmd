@@ -83,7 +83,10 @@ out <- pairs %>%
   unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) %>% 
   group_by(verb_id,theme_id,recipient_id) %>%
   sample_n(1) %>%
-  mutate(trial_set = c(''))
+  ungroup() %>%
+  arrange(classification, verb_id, theme_id, recipient_id) %>%
+  mutate(i = row_number(),
+         trial_set = floor(((2531 * i) %% 5000) / 50))
 
 write_csv(out, './generated_pairs.csv')
 ```
