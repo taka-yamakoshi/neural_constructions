@@ -81,7 +81,7 @@
     };
 
     function setupGame () {
-      //var socket = io.connect();
+      var socket = io.connect();
       var timeline = [];
 
       // Values fixed for human experiments.
@@ -90,97 +90,98 @@
       var maxQuizAttempts = 3
 
       // Start building timeline when we hear from server
-      //socket.on('onConnected', function(mongoData) {socket
+      socket.on('onConnected', function(mongoData) {
 
         // get workerId, etc. from URL (so that it can be sent to the server)
-      var turkInfo = jsPsych.turk.turkInfo();
+        var turkInfo = jsPsych.turk.turkInfo();
 
-      // Extract stick data from mongo
-      // var agent1stick = mongoData.agent1stick
-      // var agent2stick = mongoData.agent2stick
+        // Extract stick data from mongo
+        // var agent1stick = mongoData.agent1stick
+        // var agent2stick = mongoData.agent2stick
 
-      // if still in preview mode, tell them to accept first, otherwise show first slide
-      if (!turkInfo.previewMode) {
-        timeline.push(welcome);
-        timeline.push(consent);
-      } else {
-        timeline.push(preview);
-      }
+        // if still in preview mode, tell them to accept first, otherwise show first slide
+        if (!turkInfo.previewMode) {
+          timeline.push(welcome);
+          timeline.push(consent);
+        } else {
+          timeline.push(preview);
+        }
 
-      var ready_screen = {
-        type: "html-button-response",
-        stimulus:
-        "<p>Ready to begin? </p>",
-        choices: ['Begin']
-      }
+        var ready_screen = {
+          type: "html-button-response",
+          stimulus:
+          "<p>Ready to begin? </p>",
+          choices: ['Begin']
+        }
 
-      timeline.push(ready_screen);
+        timeline.push(ready_screen);
 
-    _.forEach(example_trials, function(trial) {
-        var order = _.sample([true, false]);
-        var sentenceA = order ? trial.DOsentence : trial.PDsentence;
-        var sentenceB = order ? trial.PDsentence : trial.DOsentence;
-        var sentence_stimulus = "\
+        _.forEach(example_trials, function(trial) {
+          var order = _.sample([true, false]);
+          var sentenceA = order ? trial.DOsentence : trial.PDsentence;
+          var sentenceB = order ? trial.PDsentence : trial.DOsentence;
+          var sentence_stimulus = "\
         <p style='text-align: left'>Which sentence sounds more natural, A or B?<br><br><br><br></p>\
         <p style='text-align: left'>A : " + sentenceA + ".</p>\
         <p style='text-align: left'>B : " + sentenceB + ".</p>";
-        var trial = {
-          type: "html-slider-response",
-          stimulus: sentence_stimulus,
-          prompt: "",
-          labels: ['A is far more natural','equally natural', 'B is far more natural'],
-          slider_width: sliderWidthScale * screen.width,
-          require_movement: true
+          var trial = {
+            type: "html-slider-response",
+            stimulus: sentence_stimulus,
+            prompt: "",
+            labels: ['A is far more natural','equally natural', 'B is far more natural'],
+            slider_width: sliderWidthScale * screen.width,
+            require_movement: true
+          };
+
+          timeline.push(trial)
+        })
+
+        var exit_survey = {
+          type: 'survey-text',
+          questions: [
+            {prompt: "Do you have any comments or suggestions?"}
+          ],
+          data: {
+            stimulus_type: 'exit_survey'
+          }
         };
 
-        timeline.push(trial)
-      })
+        timeline.push(exit_survey)
 
-      var exit_survey = {
-        type: 'survey-text',
-        questions: [
-          {prompt: "Do you have any comments or suggestions?"}
-        ],
-        data: {
-          stimulus_type: 'exit_survey'
-        }
-      };
+        var goodbye = {
+          type: 'html-keyboard-response',
+          stimulus: 'Thank you for participating! Press any key to to be ' +
+            'redirected to the completion page.'
+        };
 
-      timeline.push(exit_survey)
+        timeline.push(goodbye);
 
-      var goodbye = {
-        type: 'html-keyboard-response',
-        stimulus: 'Thank you for participating! Press any key to to be ' +
-          'redirected to the completion page.'
-      };
+        jsPsych.init({
+          timeline: timeline,
+          show_progress_bar: true,
+          on_finish : function(data) {
+            // At the end of the experiment, submit to turk
+            // Record number of quiz attempts
+            // jsPsych.turk.submitToTurk({'value': 0});
+            window.location.replace("https://app.prolific.co/submissions/complete?cc=394CC1E4")
+            // jsPsych.data.displayData(); // Uncomment this line to debug
+          },
+          on_trial_finish: function(trialData) {
+            // At the end of each trial, send data to server
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
 
-      timeline.push(goodbye);
-
-      jsPsych.init({
-        timeline: timeline,
-        show_progress_bar: true,
-        on_finish : function(data) {
-          // At the end of the experiment, submit to turk
-          // Record number of quiz attempts
-          // jsPsych.turk.submitToTurk({'value': 0});
-          window.location.replace("https://app.prolific.co/submissions/complete?cc=394CC1E4")
-          // jsPsych.data.displayData(); // Uncomment this line to debug
-        },
-        on_trial_finish: function(trialData) {
-          // At the end of each trial, send data to server
-          const queryString = window.location.search;
-          const urlParams = new URLSearchParams(queryString);
-
-          var packet = Object.assign({}, trialData, {
-            dbname: 'bayesian-persuasion',
-            colname: 'experiment1',
-            wID: urlParams.get('PROLIFIC_PID'),
-            aID: urlParams.get('STUDY_ID'),
-            hitID: urlParams.get('SESSION_ID'),
-            iterationName: iterationName
-          })
-        }
+            var packet = Object.assign({}, trialData, {
+              dbname: 'bayesian-persuasion',
+              colname: 'experiment1',
+              wID: urlParams.get('PROLIFIC_PID'),
+              aID: urlParams.get('STUDY_ID'),
+              hitID: urlParams.get('SESSION_ID'),
+              iterationName: iterationName
+            })
+          }
+        });
       });
     }
-    </script>
+  </script>
 </html>
