@@ -121,16 +121,14 @@
         var sentenceA = order ? trial.DOsentence : trial.PDsentence;
         var sentenceB = order ? trial.PDsentence : trial.DOsentence;
         var sentence_stimulus = "\
-        <h3>Sentence A:</h3> \
-        <p>" + sentenceA + ".</p>\
-        <h3>Sentence B:</h3> \
-        <p>" + sentenceB + ".</p>\
-        <p>Which sentence sounds more natural, A or B?\n</p>";
+        <p style='text-align: left'>Which sentence sounds more natural, A or B?<br><br><br><br></p>\
+        <p style='text-align: left'>A : " + sentenceA + ".</p>\
+        <p style='text-align: left'>B : " + sentenceB + ".</p>";
         var trial = {
           type: "html-slider-response",
           stimulus: sentence_stimulus,
           prompt: "",
-          labels: ['A is far more natural', 'B is far more natural'],
+          labels: ['A is far more natural','equally natural', 'B is far more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true
         };
