@@ -96,8 +96,7 @@
         var turkInfo = jsPsych.turk.turkInfo();
 
         // Extract stick data from mongo
-        // var agent1stick = mongoData.agent1stick
-        // var agent2stick = mongoData.agent2stick
+        var trials = mongoData.trials
 
         // if still in preview mode, tell them to accept first, otherwise show first slide
         if (!turkInfo.previewMode) {
