@@ -115,6 +115,63 @@
 
         timeline.push(ready_screen);
 
+        var practice_stimulus_1 = "\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Which sentence sounds more natural, A or B?<br></p>\
+            <p>A : Sandy filled the water into the cup.</p>\
+            <p>B : Sandy filled the cup with the water.</p>\
+          </div>";
+        var practice_stimulus_2 = "\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Which sentence sounds more natural, A or B?<br></p>\
+            <p>A : Sandy picked the book up.</p>\
+            <p>B : Sandy picked up the book.</p>\
+          </div>";
+
+        var practice_trial_1 = {
+          type: "html-slider-response",
+          stimulus: practice_stimulus_1,
+          prompt: "",
+          labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
+          slider_width: sliderWidthScale * screen.width,
+          require_movement: true
+        };
+        timeline.push(practice_trial_1)
+        var feed_back_1 = {
+          type: 'instructions',
+          pages:"\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Thank you for your response.  Most people think sentence B (Sandy filled the cup with the water) \
+            is more natural than sentence A (Sandy filled the water into the cup), \
+            and would drag the slider far to the right side.</p>\
+          </div>"
+          show_clickable_nav: false,
+          allow_keys: false
+        };
+        timeline.push(feed_back_1)
+
+        var practice_trial_2 = {
+          type: "html-slider-response",
+          stimulus: practice_stimulus_1,
+          prompt: "",
+          labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
+          slider_width: sliderWidthScale * screen.width,
+          require_movement: true
+        };
+        timeline.push(practice_trial_2)
+        var feed_back_2 = {
+          type: 'instructions'
+          pages:"\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Thank you for your response. Most people think both of these sentences \
+            (Sandy picked the book up, Sandy picked up the book) are equally natural, \
+            and would place the slider close to the middle.</p> \
+          <div>"
+          show_clickable_nav: false,
+          allow_keys: false
+        };
+        timeline.push(feed_back_2)
+
         _.forEach(trials, function(trial) {
           var order = _.sample([true, false]);
           var sentenceA = order ? trial.DOsentence : trial.PDsentence;
@@ -159,9 +216,9 @@
 
 	jsPsych.data.addProperties({
           gameid: mongoData.gameid,
-	  setid: mongoData.set_id  
+	  setid: mongoData.set_id
         });
-	    
+
         jsPsych.init({
           timeline: timeline,
           show_progress_bar: true,
