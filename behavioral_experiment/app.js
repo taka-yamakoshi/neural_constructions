@@ -162,7 +162,7 @@ function initializeWithTrials(socket) {
       console.log('returning hard-coded sticks');
       socket.emit('onConnected', {
 	gameid: gameid,
-	trials: _.clone(require('example_trials.json'))
+	trials: _.clone(require('./example_trials.json'))
       });
     }
   });
