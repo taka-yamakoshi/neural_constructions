@@ -137,38 +137,40 @@
           require_movement: true
         };
         timeline.push(practice_trial_1)
+
         var feed_back_1 = {
-          type: 'instructions',
-          pages:"\
-          <div style='margin-left:25%;text-align: left'>\
-            <p>Thank you for your response.  Most people think sentence B (Sandy filled the cup with the water) \
-            is more natural than sentence A (Sandy filled the water into the cup), \
+          type: 'html-keyboard-response',
+          stimulus:"\
+          <div>\
+            <p>Thank you for your response.</p>\
+            <p>Most people think sentence B (Sandy filled the cup with water) <br>\
+            is more natural than sentence A (Sandy filled water into the cup),<br> \
             and would drag the slider far to the right side.</p>\
+            <p>Press any key to move on.</p>\
           </div>",
-          show_clickable_nav: false,
-          allow_keys: false
         };
         timeline.push(feed_back_1)
 
         var practice_trial_2 = {
           type: "html-slider-response",
-          stimulus: practice_stimulus_1,
+          stimulus: practice_stimulus_2,
           prompt: "",
           labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true
         };
         timeline.push(practice_trial_2)
+
         var feed_back_2 = {
-          type: 'instructions',
-          pages:"\
-          <div style='margin-left:25%;text-align: left'>\
-            <p>Thank you for your response. Most people think both of these sentences \
-            (Sandy picked the book up, Sandy picked up the book) are equally natural, \
-            and would place the slider close to the middle.</p> \
+          type: 'html-keyboard-response',
+          stimulus:"\
+          <div>\
+            <p>Thank you for your response. </p>\
+            <p>Most people think both of these sentences <br>\
+            (Sandy picked the book up, Sandy picked up the book) <br>\
+            are equally natural, and would place the slider close to the middle.</p> \
+            <p>Press any key to move on.</p>\
           <div>",
-          show_clickable_nav: false,
-          allow_keys: false
         };
         timeline.push(feed_back_2)
 
