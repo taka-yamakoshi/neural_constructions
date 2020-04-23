@@ -109,12 +109,25 @@
         var ready_screen = {
           type: "html-button-response",
           stimulus:
-          "<p>Ready to begin? </p>",
+          "<font size='3'><p align=left style='width:50%;margin:auto'>We are interested in your intuition about the English language.</p>\
+          <p align=left style='width:50%;margin:auto'>In English, there are different ways to express similar meanings.  \
+          Among those different ways, some sound more natural than others.  \
+          In this experiment, we ask you to report your judgement for such cases.</p>\
+          <br>\
+          <p align=left style='width:50%;margin:auto'>On the screen, you will see two sentences (A and B) with similar meanings.  \
+          Below them is the slider to indicate your judgement.  \
+          The slider ranges from 'A is far more natural' to 'B is far more natural'.  \
+          Please read both sentences carefully and indicate \
+          which sentence sounds more natural by how much. Sometimes, the two sentences can sound equally natural/unnatural, \
+          in which case place the button close to the midpoint.</p>\
+          <br>\
+          <p align=left style='width:50%;margin:auto'>You have two practice trials to get used to the structure of this experiment.</p>\
+          <p>Press the button to start the practice trials.</p>",
           choices: ['Begin']
         }
 
         timeline.push(ready_screen);
-        
+
         var practice_stimulus_1 = "\
           <div style='margin-left:25%;text-align: left'>\
             <p>Which sentence sounds more natural, A or B?<br></p>\
@@ -162,7 +175,7 @@
         timeline.push(practice_trial_2)
 
         var feed_back_2 = {
-          type: 'html-keyboard-response',
+          type: 'html-button-response',
           stimulus:"\
           <div>\
             <p>Thank you for your response. </p>\
@@ -172,8 +185,9 @@
             <p> Please keep in mind, however, that different sentences\
             may sound more or less natural to different people, so just tell us\
             what you think! </p>\
-            <p>Press any key to begin the experiment.</p>\
+            <p>Press the button to begin the experiment.</p>\
           <div>",
+          choices: ['Begin the experiment'],
         };
         timeline.push(feed_back_2)
 
@@ -209,7 +223,7 @@
 
 	// Sample an index between timeline.length - 25 and timeline.length
 	// timeline.splice(index, 0, catch_trial)
-	    
+
         var exit_survey = {
           type: 'survey-text',
           questions: [
