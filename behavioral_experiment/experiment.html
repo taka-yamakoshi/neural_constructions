@@ -211,18 +211,24 @@
 	    data: trial
           });
         })
+        var catch_stimulus = "\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Which sentence sounds more natural, A or B?<br></p>\
+            <p>A : The man ate a slice of cake.</p>\
+            <p>B : The man cake of slice ate a.</p>\
+          </div>";
 
-	var catch_trial = {
-	    type: "html-slider-response",
-	    stimulus: "catch trial stimulus",
-	    prompt: "",
-	    labels: ['A is much more natural', 'about the same', 'B is much more natural'],
-	    slider_width: sliderWidthScale * screen.width,
-	    require_movement: true
-         };
-
-	// Sample an index between timeline.length - 25 and timeline.length
-	// timeline.splice(index, 0, catch_trial)
+        var catch_trial = {
+          type: "html-slider-response",
+          stimulus: catch_stimulus,
+          prompt: "",
+          labels: ['A is much more natural', 'about the same', 'B is much more natural'],
+          slider_width: sliderWidthScale * screen.width,
+          require_movement: true
+        };
+        var catch_trial_index = timeline.length - Math.floor(Math.random()*(25));
+        timeline.splice(catch_trial_index, 0, catch_trial)
+        console.log(timeline)
 
         var exit_survey = {
           type: 'survey-text',
