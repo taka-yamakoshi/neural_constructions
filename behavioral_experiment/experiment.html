@@ -37,7 +37,7 @@
     var consent = {
       type: 'html-button-response',
       stimulus:
-        "<font size='3'><p align=left style='width:50%;margin:auto'> \
+        "<font size='2'><p align=left style='width:50%;margin:auto'> \
 	This research is being conducted by Takateru Yamakoshi, an undergraduate student, \
         Robert Hawkins, a postdoctoral \
         researcher, Adele Goldberg, and Tom Griffiths, faculty members at Princeton \
@@ -114,7 +114,7 @@
         }
 
         timeline.push(ready_screen);
-
+        
         var practice_stimulus_1 = "\
           <div style='margin-left:25%;text-align: left'>\
             <p>Which sentence sounds more natural, A or B?<br></p>\
@@ -132,7 +132,7 @@
           type: "html-slider-response",
           stimulus: practice_stimulus_1,
           prompt: "",
-          labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
+          labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true
         };
@@ -143,10 +143,10 @@
           stimulus:"\
           <div>\
             <p>Thank you for your response.</p>\
-            <p>Most people think sentence B (Sandy filled the cup with water) <br>\
+            <p>Many people think sentence B (Sandy filled the cup with water) <br>\
             is more natural than sentence A (Sandy filled water into the cup),<br> \
-            and would drag the slider far to the right side.</p>\
-            <p>Press any key to move on.</p>\
+            and would drag the slider further to the right side.</p>\
+            <p>Press any key to move on to another practice question.</p>\
           </div>",
         };
         timeline.push(feed_back_1)
@@ -155,7 +155,7 @@
           type: "html-slider-response",
           stimulus: practice_stimulus_2,
           prompt: "",
-          labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
+          labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true
         };
@@ -166,10 +166,13 @@
           stimulus:"\
           <div>\
             <p>Thank you for your response. </p>\
-            <p>Most people think both of these sentences <br>\
+            <p>Many people think both of these sentences <br>\
             (Sandy picked the book up, Sandy picked up the book) <br>\
-            are equally natural, and would place the slider close to the middle.</p> \
-            <p>Press any key to move on.</p>\
+            sound equally natural, and would place the slider closer to the middle.</p> \
+            <p> Please keep in mind, however, that different sentences\
+            may sound more or less natural to different people, so just tell us\
+            what you think! </p>\
+            <p>Press any key to begin the experiment.</p>\
           <div>",
         };
         timeline.push(feed_back_2)
@@ -188,7 +191,7 @@
             type: "html-slider-response",
             stimulus: sentence_stimulus,
             prompt: "",
-            labels: ['A is much more natural', 'equally natural', 'B is much more natural'],
+            labels: ['A is much more natural', 'about the same', 'B is much more natural'],
             slider_width: sliderWidthScale * screen.width,
             require_movement: true
           };
