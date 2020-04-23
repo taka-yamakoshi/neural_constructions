@@ -66,15 +66,6 @@
       choices: ['I consent to participate.']
     }
 
-    var catch_trial = {
-      type: "html-slider-response",
-      stimulus: "catch trial stimulus",
-      prompt: "",
-      labels: ['A is much more natural', 'about the same', 'B is much more natural'],
-      slider_width: sliderWidthScale * screen.width,
-      require_movement: true
-    };
-
     window.onload = function() {
       setupGame();
     }
@@ -196,17 +187,25 @@
               <p>A : " + sentenceA + ".</p>\
               <p>B : " + sentenceB + ".</p>\
             </div>";
-          var trial = {
+          timeline.push({
             type: "html-slider-response",
             stimulus: sentence_stimulus,
             prompt: "",
             labels: ['A is much more natural', 'about the same', 'B is much more natural'],
             slider_width: sliderWidthScale * screen.width,
-            require_movement: true
-          };
-
-          timeline.push(trial)
+            require_movement: true,
+	    data: trial
+          });
         })
+
+	var catch_trial = {
+	    type: "html-slider-response",
+	    stimulus: "catch trial stimulus",
+	    prompt: "",
+	    labels: ['A is much more natural', 'about the same', 'B is much more natural'],
+	    slider_width: sliderWidthScale * screen.width,
+	    require_movement: true
+         };
 
 	// Sample an index between timeline.length - 25 and timeline.length
 	// timeline.splice(index, 0, catch_trial)
@@ -251,7 +250,7 @@
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
 
-            var packet = Object.assign({}, trialData, {
+            var packet = _.extend({}, trialData, {
               dbname: 'neural_constructions',
               colname: 'experiment',
               wID: urlParams.get('PROLIFIC_PID'),
@@ -259,7 +258,7 @@
               hitID: urlParams.get('SESSION_ID'),
               iterationName: iterationName
             })
-
+	    console.log(trialData)
 	    socket.emit('currentData', packet);
           }
         });
