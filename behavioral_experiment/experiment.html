@@ -66,6 +66,15 @@
       choices: ['I consent to participate.']
     }
 
+    var catch_trial = {
+      type: "html-slider-response",
+      stimulus: "catch trial stimulus",
+      prompt: "",
+      labels: ['A is much more natural', 'about the same', 'B is much more natural'],
+      slider_width: sliderWidthScale * screen.width,
+      require_movement: true
+    };
+
     window.onload = function() {
       setupGame();
     }
@@ -199,6 +208,9 @@
           timeline.push(trial)
         })
 
+	// Sample an index between timeline.length - 25 and timeline.length
+	// timeline.splice(index, 0, catch_trial)
+	    
         var exit_survey = {
           type: 'survey-text',
           questions: [
