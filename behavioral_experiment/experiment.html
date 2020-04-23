@@ -147,7 +147,8 @@
           prompt: "",
           labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
-          require_movement: true
+          require_movement: true,
+	        data : {'stimulus_type': 'practice'}
         };
         timeline.push(practice_trial_1)
 
@@ -170,7 +171,8 @@
           prompt: "",
           labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
-          require_movement: true
+          require_movement: true,
+          data: {'stimulus_type': 'practice'}
         };
         timeline.push(practice_trial_2)
 
@@ -208,7 +210,7 @@
             labels: ['A is much more natural', 'about the same', 'B is much more natural'],
             slider_width: sliderWidthScale * screen.width,
             require_movement: true,
-	    data: trial
+	    data: _.extend({}, trial, {'stimulus_type': 'main_judgement'})
           });
         })
         var catch_stimulus = "\
@@ -224,7 +226,8 @@
           prompt: "",
           labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
-          require_movement: true
+          require_movement: true,
+          data: {'stimulus_type': 'catch'}
         };
         var catch_trial_index = timeline.length - Math.floor(Math.random()*(25));
         timeline.splice(catch_trial_index, 0, catch_trial)
