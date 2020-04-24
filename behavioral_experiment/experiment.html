@@ -109,21 +109,21 @@
         var ready_screen = {
           type: "html-button-response",
           stimulus:
-          "<font size='3'><p align=left style='width:50%;margin:auto'>We are interested in your intuition about the English language.</p>\
-          <p align=left style='width:50%;margin:auto'>In English, there are different ways to express similar meanings.  \
-          Among those different ways, some sound more natural than others.  \
-          In this experiment, we ask you to report your judgement for such cases.</p>\
+          "<font size='3'><p align=left style='width:50%;margin:auto'>We are interested in your intuitions about the English language!</p>\
           <br>\
-          <p align=left style='width:50%;margin:auto'>On the screen, you will see two sentences (A and B) with similar meanings.  \
-          Below them is the slider to indicate your judgement.  \
+          <p align=left style='width:50%;margin:auto'>In English, there are often different ways to say the same thing,\
+          but some ways may sound more natural than others. \
+          In this study, we will show you pairs of sentences, and will ask you which sounds more natural.</p>\
+          <br>\
+          <p align=left style='width:50%;margin:auto'> \
+          For each pair, you will see the two sentences labeled with the letters <b>A</b> and <b>B</b>, and a slider at the bottom of the screen.  \
           The slider ranges from 'A is far more natural' to 'B is far more natural'.  \
-          Please read both sentences carefully and indicate \
-          which sentence sounds more natural by how much. Sometimes, the two sentences can sound equally natural/unnatural, \
-          in which case place the button close to the midpoint.</p>\
+          Please read both sentences carefully and indicate which sentence sounds more natural, and by how much. \
+          Sometimes, the two sentences can sound equally natural or unnatural, \
+          in which case you would place the button closer to the center, 'about the same'.</p>\
           <br>\
-          <p align=left style='width:50%;margin:auto'>You have two practice trials to get used to the structure of this experiment.</p>\
-          <p>Press the button to start the practice trials.</p>",
-          choices: ['Begin']
+          <p align=left style='width:50%;margin:auto'>Let's begin with two practice trials to get used to how it works.</p>",
+          choices: ['Begin practice!']
         }
 
         timeline.push(ready_screen);
@@ -131,8 +131,8 @@
         var practice_stimulus_1 = "\
           <div style='margin-left:25%;text-align: left'>\
             <p>Which sentence sounds more natural, A or B?<br></p>\
-            <p>A : Sandy filled the water into the cup.</p>\
-            <p>B : Sandy filled the cup with the water.</p>\
+            <p>A : Sandy filled water into the cup.</p>\
+            <p>B : Sandy filled the cup with water.</p>\
           </div>";
         var practice_stimulus_2 = "\
           <div style='margin-left:25%;text-align: left'>\
@@ -148,7 +148,7 @@
           labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true,
-	        data : {'stimulus_type': 'practice'}
+	  data : {'stimulus_type': 'practice'}
         };
         timeline.push(practice_trial_1)
 
@@ -157,8 +157,8 @@
           stimulus:"\
           <div>\
             <p>Thank you for your response.</p>\
-            <p>Many people think sentence B (Sandy filled the cup with water) <br>\
-            is more natural than sentence A (Sandy filled water into the cup),<br> \
+            <p>Many people think sentence B (Sandy filled the cup with water) \
+            is more natural than sentence A (Sandy filled water into the cup),\
             and would drag the slider further to the right side.</p>\
             <p>Press any key to move on to another practice question.</p>\
           </div>",
@@ -210,27 +210,53 @@
             labels: ['A is much more natural', 'about the same', 'B is much more natural'],
             slider_width: sliderWidthScale * screen.width,
             require_movement: true,
-	    data: _.extend({}, trial, {'stimulus_type': 'main_judgement'})
+	    data: _.extend({}, trial, {
+	     'sentenceA' : order ? 'DO' : 'PD',
+	     'sentenceB' : order ? 'PD' : 'DO',
+	     'highValueMeans' : order ? 'PD' : 'DO',
+	     'stimulus_type': 'main_judgement'
+	    })
           });
         })
-        var catch_stimulus = "\
+        var catch_stimulus1 = "\
           <div style='margin-left:25%;text-align: left'>\
             <p>Which sentence sounds more natural, A or B?<br></p>\
             <p>A : The man ate a slice of cake.</p>\
             <p>B : The man cake of slice ate a.</p>\
           </div>";
 
-        var catch_trial = {
+	var catch_stimulus2 = "\
+          <div style='margin-left:25%;text-align: left'>\
+            <p>Which sentence sounds more natural, A or B?<br></p>\
+            <p>A : The woman ball him the kicked.</p>\
+            <p>B : The woman kicked him the ball.</p>\
+          </div>";
+
+        var catch_trial1 = {
           type: "html-slider-response",
-          stimulus: catch_stimulus,
+          stimulus: catch_stimulus1,
           prompt: "",
           labels: ['A is much more natural', 'about the same', 'B is much more natural'],
           slider_width: sliderWidthScale * screen.width,
           require_movement: true,
-          data: {'stimulus_type': 'catch'}
+          data: {'stimulus_type': 'catch1', 'highValueMeans' : 'error' }
         };
-        var catch_trial_index = timeline.length - Math.floor(Math.random()*(25));
-        timeline.splice(catch_trial_index, 0, catch_trial)
+        var catch_trial2 = {
+          type: "html-slider-response",
+          stimulus: catch_stimulus2,
+          prompt: "",
+          labels: ['A is much more natural', 'about the same', 'B is much more natural'],
+          slider_width: sliderWidthScale * screen.width,
+          require_movement: true,
+          data: {'stimulus_type': 'catch2', 'highValueMeans' : 'correct' }
+        };
+
+        var catch_trial_index1 = timeline.length - Math.floor(Math.random()*(12) - 13);
+        var catch_trial_index2 = timeline.length - Math.floor(Math.random()*(12));
+	  
+        timeline.splice(catch_trial_index1, 0, catch_trial1)
+	timeline.splice(catch_trial_index2, 0, catch_trial2)
+	  
         console.log(timeline)
 
         var exit_survey = {
@@ -264,21 +290,20 @@
           on_finish : function(data) {
             // At the end of the experiment, submit to turk
             // Record number of quiz attempts
-            // jsPsych.turk.submitToTurk({'value': 0});
-            window.location.replace("https://app.prolific.co/submissions/complete?cc=394CC1E4")
-            // jsPsych.data.displayData(); // Uncomment this line to debug
+            jsPsych.turk.submitToTurk({'value': 0});
+            //window.location.replace("https://app.prolific.co/submissions/complete?cc=394CC1E4")
           },
           on_trial_finish: function(trialData) {
             // At the end of each trial, send data to server
-            const queryString = window.location.search;
-            const urlParams = new URLSearchParams(queryString);
+            //const queryString = window.location.search;
+            //const urlParams = new URLSearchParams(queryString);
 
             var packet = _.extend({}, trialData, {
               dbname: 'neural_constructions',
               colname: 'experiment',
-              wID: urlParams.get('PROLIFIC_PID'),
-              aID: urlParams.get('STUDY_ID'),
-              hitID: urlParams.get('SESSION_ID'),
+              wID: turkInfo.workerId,
+              aID: turkInfo.assignmentId,
+              hitID: turkInfo.hitId,
               iterationName: iterationName
             })
 	    console.log(trialData)
