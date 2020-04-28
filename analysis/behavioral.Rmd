@@ -19,10 +19,11 @@ d_judgements <- d_raw %>%
   mutate(DOpreference = ifelse(highValueMeans == 'DO', 
                                response, 100 - response),
          recipient_id = factor(recipient_id), 
-         theme_type = factor(theme_type))
+         theme_type = factor(theme_type),
+         DOpreference_binary = DOpreference > 50)
 ```
 
-Look at 
+Collapse over everything and look at alternating vs. non-alternating.
 
 ```{r}
 d_judgements %>%
@@ -34,6 +35,8 @@ d_judgements %>%
     labs(x = 'verb class', y = 'average DO preference') +
     theme_few() 
 ```
+
+Break out by recipient_id.
 
 ```{r}
 d_judgements %>%
@@ -49,8 +52,10 @@ d_judgements %>%
     theme_few() 
 ```
 
-How often to people rate DO as better?
+How often do people rate DO as better?
 
 ```{r}
-d_judgements 
+d_judgements %>%
+  group_by(classification, recipient_id) %>%
+  summarize(pct_DO_better = mean(DOpreference_binary))
 ```
