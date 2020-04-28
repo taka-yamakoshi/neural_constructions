@@ -85,7 +85,7 @@
       var timeline = [];
 
       // Values fixed for human experiments.
-      var iterationName = 'prolificPilot0'
+      var iterationName = 'mturkpilot1'
       var sliderWidthScale = 0.5
       var maxQuizAttempts = 3
 
@@ -146,49 +146,6 @@
         }
 
         timeline.push(ready_screen);
-
-        // var practice_stimulus_2 = "\
-        //   <div style='margin-left:25%;text-align: left'>\
-        //     <p>Which sentence sounds more natural, A or B?<br></p>\
-        //   </div>";
-
-        // var feed_back_1 = {
-        //   type: 'html-keyboard-response',
-        //   stimulus:"\
-        //   <div>\
-        //     <p><img src='sliderGifFar.gif' width = 800></p>\
-        //     <p>Press any key to move on to another practice question.</p>\
-        //   <div>",
-        // };
-        // timeline.push(feed_back_1)
-
-        // var practice_trial_2 = {
-        //   type: "html-slider-response",
-        //   stimulus: practice_stimulus_2,
-        //   prompt: "",
-        //   labels: ['A is much more natural', 'about the same', 'B is much more natural'],
-        //   slider_width: sliderWidthScale * screen.width,
-        //   require_movement: true,
-        //   data: {'stimulus_type': 'practice'}
-        // };
-        // timeline.push(practice_trial_2)
-
-        // var feed_back_2 = {
-        //   type: 'html-button-response',
-        //   stimulus:"\
-        //   <div>\
-        //     <p>Thank you for your response. </p>\
-        //     <p>Most people don’t have strong intuitions about this comparison,\
-        //      so they would position the slider closer to the middle</p>\
-        //     <p><img src='sliderGifNear.gif' width = 800></p>\
-        //     <p> Please keep in mind, however, that different sentences\
-        //     may sound more or less natural to different people, so just tell us\
-        //     what you think! </p>\
-        //     <p>Press the button to begin the experiment.</p>\
-        //   <div>",
-        //   choices: ['Begin the experiment'],
-        // };
-        // timeline.push(feed_back_2)
 
         _.forEach(trials, function(trial) {
           var order = _.sample([true, false]);
