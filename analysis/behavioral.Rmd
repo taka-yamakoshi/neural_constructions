@@ -1,0 +1,56 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(tidyboot)
+library(ggthemes)
+```
+
+Import data
+
+```{r}
+d_raw <- read_csv('../behavioral_experiment/dataFromMongo.csv') 
+
+d_judgements <- d_raw %>%
+  filter(stimulus_type == 'main_judgement') %>%
+  mutate(DOpreference = ifelse(highValueMeans == 'DO', 
+                               response, 100 - response),
+         recipient_id = factor(recipient_id), 
+         theme_type = factor(theme_type))
+```
+
+Look at 
+
+```{r}
+d_judgements %>%
+  group_by(classification) %>%
+  tidyboot_mean(DOpreference) %>%
+  ggplot(aes(x = classification, y = empirical_stat)) +
+    geom_bar(stat = 'identity') +
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+    labs(x = 'verb class', y = 'average DO preference') +
+    theme_few() 
+```
+
+```{r}
+d_judgements %>%
+  group_by(classification, recipient_id) %>%
+  tidyboot_mean(DOpreference) %>%
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%
+  ggplot(aes(x = classification, y = empirical_stat)) +
+    geom_bar(stat = 'identity') +
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+    labs(x = 'verb class', y = 'average DO preference') +
+    guides(x = guide_axis(angle = 90)) +
+    facet_grid( ~ recipient_id) +
+    theme_few() 
+```
+
+How often to people rate DO as better?
+
+```{r}
+d_judgements 
+```
