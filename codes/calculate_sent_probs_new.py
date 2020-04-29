@@ -38,9 +38,7 @@ def calc_sent_prob(sentence):
 with open(PATH+'textfile/generated_pairs.csv') as f:
     reader = csv.reader(f)
     corpus = [row for row in reader][1:]
-
 sent_list = []
-
 for pair in corpus:
     if pair[-1] == args[1]:
         sent_list.append([pair[4],pair[5]])
