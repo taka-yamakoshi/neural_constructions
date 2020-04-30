@@ -17,7 +17,6 @@ def calc_sent_prob(sentence):
     words = sentence.split(" ")
     words.append(".")
     tokenized_sentence = tokenizer.encode(" ".join(words))
-    mask_id = tokenizer.encode("[MASK]")[1:-1][0]
     sent_prob = 0
     for masked_index in range(1,(len(tokenized_sentence)-1)):
         masked_sentence = tokenized_sentence.copy()
@@ -37,14 +36,17 @@ def calc_sent_prob(sentence):
 #Load sentences
 with open(PATH+'textfile/generated_pairs.csv') as f:
     reader = csv.reader(f)
-    corpus = [row for row in reader][1:]
-sent_list = [[pair[4],pair[5]] for pair in corpus if pair[9] == args[1]]
+    file = [row for row in reader]
+    head = file[0]
+    corpus = file[1:]
+sent_list = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('recipient_id')] == args[1]]
 
 #Load the model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 model.eval()
 
+mask_id = tokenizer.encode("[MASK]")[1:-1][0]
 print("Calculating probability...")
 DO_prob = np.array([calc_sent_prob(sent[0]) for sent in sent_list])
 print("Finished with DO")
