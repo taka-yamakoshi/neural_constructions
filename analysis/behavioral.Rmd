@@ -12,10 +12,42 @@ library(ggthemes)
 Import data
 
 ```{r}
-d_raw <- read_csv('../behavioral_experiment/dataFromMongo.csv') 
+d_raw <- read_csv('../behavioral_experiment/dataFromMongo.csv')
+```
 
+Implement exclusion criteria
+
+```{r}
+# Exclude participants who fail either catch trial
+failed_catch_trials <- d_raw %>%
+  filter(stimulus_type %in% c('catch1', 'catch2')) %>%
+  mutate(errorPreference = ifelse(highValueMeans == 'error', 
+                                  response, 100-response)) %>%
+  filter(errorPreference > 50) %>%
+  pull(gameid) %>%
+  unique()
+  
+# Exclude all data from participants who skipped through >50% of trials
+failed_rt_check <- d_raw %>%
+  mutate(rt_below_threshold = rt < 3000) %>%
+  group_by(gameid, rt_below_threshold) %>%
+  tally() %>%
+  spread(rt_below_threshold, n) %>%
+  mutate(proportion_guessed = `TRUE`/(`TRUE` + `FALSE`)) %>%
+  filter(proportion_guessed > 0.5) %>%
+  pull(gameid)
+
+ids_to_exclude <- c(failed_rt_check, failed_catch_trials)
+```
+
+```{r}
 d_judgements <- d_raw %>%
+  # Remove all excluded participants
+  filter(!(gameid %in% ids_to_exclude)) %>%
   filter(stimulus_type == 'main_judgement') %>%
+  # Also exclude particular trials that we under reading rt threshold
+  filter(rt > 3000) %>%
+  # Re-map randomized A/B assignment so that high always means DO
   mutate(DOpreference = ifelse(highValueMeans == 'DO', 
                                response, 100 - response),
          recipient_id = factor(recipient_id), 
