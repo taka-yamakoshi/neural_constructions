@@ -12,12 +12,19 @@ library(ggthemes)
 Import data
 
 ```{r}
-d_raw <- read_csv('../behavioral_experiment/dataFromMongo.csv')
+d_raw <- read_csv('../behavioral_experiment/dataFromMongo_pilotCombined.csv')
 ```
 
 Implement exclusion criteria
 
 ```{r}
+complete_games <- d_raw %>%
+  filter(stimulus_type == 'main_judgement') %>%
+  group_by(gameid) %>%
+  tally() %>%
+  filter(n == 50) %>%
+  pull(gameid) 
+
 # Exclude participants who fail either catch trial
 failed_catch_trials <- d_raw %>%
   filter(stimulus_type %in% c('catch1', 'catch2')) %>%
@@ -29,6 +36,8 @@ failed_catch_trials <- d_raw %>%
   
 # Exclude all data from participants who skipped through >50% of trials
 failed_rt_check <- d_raw %>%
+  filter(stimulus_type == 'main_judgement') %>%
+  filter(gameid %in% complete_games) %>%
   mutate(rt_below_threshold = rt < 3000) %>%
   group_by(gameid, rt_below_threshold) %>%
   tally() %>%
@@ -37,7 +46,8 @@ failed_rt_check <- d_raw %>%
   filter(proportion_guessed > 0.5) %>%
   pull(gameid)
 
-ids_to_exclude <- c(failed_rt_check, failed_catch_trials)
+ids_to_exclude <- unique(c(failed_rt_check, failed_catch_trials))
+cat("excluding ", length(ids_to_exclude), "/", length(unique(d_raw$gameid)))
 ```
 
 ```{r}
@@ -81,7 +91,10 @@ d_judgements %>%
     labs(x = 'verb class', y = 'average DO preference') +
     guides(x = guide_axis(angle = 90)) +
     facet_grid( ~ recipient_id) +
-    theme_few() 
+    theme_few() +
+    theme(aspect.ratio = 2)
+
+ggsave("pilot.pdf")
 ```
 
 How often do people rate DO as better?
