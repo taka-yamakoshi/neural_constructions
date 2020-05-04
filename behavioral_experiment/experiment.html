@@ -55,7 +55,7 @@
         with a random string.</p> \
         <br> \
         <p style='width:50%;margin:auto' align='left'>If you have any questions about this research, do not hesitate to \
-        contact Robert Hawkins at hawkrobe@gmail.com. If you have any questions \
+        contact Robert Hawkins at <b>hawkrobe@gmail.com</b>. If you have any questions \
         about your rights or treatment as a participant in this research project, \
         please contact the Princeton Office for Research Integrity and Assurance \
         by phone at 609-258-0865 or by email at ria@princeton.edu.</p> \
@@ -86,7 +86,7 @@
       var timeline = [];
 
       // Values fixed for human experiments.
-      var iterationName = 'testing'
+      var iterationName = 'mturk_sample'
       var sliderWidthScale = 0.5
       var maxQuizAttempts = 3
 
@@ -147,7 +147,8 @@
                     if we detect anomalies in your behavior suggesting that you are not reading carefully.</p>",
                    "<p align=left style='width:50%;margin:auto'>\
                     Before we begin, you must complete a short quiz to \
-                    show that you understand the task. You must pass the quiz within 1 attempt to continue.</p>"
+                    show that you understand the task. You must pass the quiz within \
+                    <b>1 attempt</b> to proceed to the experiment, so think carefully about your responses!</p>"
                   ],
           show_clickable_nav: true,
           allow_backward : false
@@ -165,7 +166,7 @@
             options: ["'Which sentence is longer?'", "'Which sentence sounds funnier?'", "'Which sentence sounds more natural?'"],
             required: true},
            {prompt: "<br>What happens if you do <b>not</b> read each pair of sentences carefully?",
-            options: ["I will click through quickly and get my completion bonus.",
+            options: ["I will click through everything quickly and get my completion bonus!",
                       "The experiment will be terminated and I will not receive a completion bonus."],
             required: true},
            {prompt: "<br>What should I do if both sentences sound the same to me?",
@@ -231,7 +232,7 @@
             }
           },
           on_finish: function() {
-            jsPsych.endExperiment()
+//            jsPsych.endExperiment()
             jsPsych.turk.submitToTurk({'bonus': '0'});
           }
         }
@@ -317,13 +318,13 @@
             }
           },
           on_finish: function() {
-            jsPsych.endExperiment()
+//            jsPsych.endExperiment()
             jsPsych.turk.submitToTurk({'bonus': '0'});
           }
         }
 
         // Put one catch trial in trials 12-25
-        var catch_trial_index1 = timeline.length - Math.floor(Math.random()*(12)) - 38;
+        var catch_trial_index1 = timeline.length - Math.floor(Math.random()*(12)) - 25;
         // Put another catch trial in trials 38-50
         var catch_trial_index2 = timeline.length - Math.floor(Math.random()*(12));
         console.log(catch_trial_index1, 'index1')
@@ -350,7 +351,9 @@
         var goodbye = {
           type: 'html-keyboard-response',
           stimulus: 'Thank you for participating! Press any key to to be ' +
-            'redirected to the completion page.'
+            'redirected to the completion page. You will be paid the base rate of ' +
+	    '$1.00 immediately after your HIT is approved, and will receive an additional ' +
+	    'completion bonus of $1.00 within 48 hours.'
         };
 
         timeline.push(goodbye);
