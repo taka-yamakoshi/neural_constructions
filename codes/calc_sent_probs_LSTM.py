@@ -10,7 +10,7 @@ import sys
 sys.path.append('..')
 args = sys.argv
 ##First argument: comparison categery (recipient or theme)
-##Second argument: recipient/theme type
+##Second argument: recipient/theme type (pronoun, shortDefinite, etc.)
 with open("mypath.txt") as f:
     PATH = f.read()
 
@@ -47,14 +47,14 @@ with open(PATH+'textfile/generated_pairs.csv') as f:
     file = [row for row in reader]
     head = file[0]
     corpus = file[1:]
-    if args[1] == "recipient":
-        sent_list_alt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('recipient_id')] == args[2] and pair[head.index('classification')] == "alternating"]
-        sent_list_nonalt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('recipient_id')] == args[2] and pair[head.index('classification')] == "non-alternating"]
-    elif args[1] == "theme":
-        sent_list_alt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('theme_type')] == args[2] and pair[head.index('classification')] == "alternating"]
-        sent_list_nonalt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('theme_type')] == args[2] and pair[head.index('classification')] == "non-alternating"]
-    else:
-        logging.error('Invalid comparison category: should be either "recipient" or "theme"')
+if args[1] == "recipient":
+    sent_list_alt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('recipient_id')] == args[2] and pair[head.index('classification')] == "alternating"]
+    sent_list_nonalt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('recipient_id')] == args[2] and pair[head.index('classification')] == "non-alternating"]
+elif args[1] == "theme":
+    sent_list_alt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('theme_type')] == args[2] and pair[head.index('classification')] == "alternating"]
+    sent_list_nonalt = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus if pair[head.index('theme_type')] == args[2] and pair[head.index('classification')] == "non-alternating"]
+else:
+    logging.error('Invalid comparison category: should be either "recipient" or "theme"')
 
 sentence_data_DO_alt = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in sentence[0].split(" ")]) for sentence in sent_list_alt]
 sentence_data_PD_alt = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in sentence[1].split(" ")]) for sentence in sent_list_alt]
