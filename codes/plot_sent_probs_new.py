@@ -13,6 +13,13 @@ with open(PATH + 'datafile/sent_prob_ratio_'+args[1]+'.pkl','rb') as f:
 with open(PATH + 'datafile/sent_prob_ratio_'+args[2]+'.pkl','rb') as f:
     ratio_2 = pickle.load(f)
 
+with open(PATH + 'datafile/lstm_log_ratio_shortDefinite.pkl','rb') as f:
+    ratio = pickle.load(f)
+
+fig, axis = plt.subplots()
+axis.bar(np.arange(2),np.array([np.average(ratio[i]) for i in range(2)]),yerr =np.array([np.std(ratio[i])/np.sqrt(len(ratio[i])) for i in range(2)]))
+plt.show()
+exit()
 
 
 
@@ -24,7 +31,6 @@ def calculate_t(x,y):
     pooled_var = (x_var*(x.size-1)+y_var*(y.size-1))/(x.size+y.size-2)
     return (x_ave-y_ave)/(np.sqrt(pooled_var*(1/x.size+ 1/y.size)))
 
-print(calculate_t(ratio_1,ratio_2))
 
 fig, axis = plt.subplots()
 probs = [ratio_1,ratio_2]
