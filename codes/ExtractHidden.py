@@ -24,6 +24,7 @@ model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 model.eval()
 
 verb_list = ["showed", "told", "guaranteed", "lent", "offered", "loaned", "left", "promised", "slipped", "wrote", "taught", "gave", "fed", "paid", "voted", "handed", "served", "tossed", "sent", "sold"]
+verb_vocab = len(verb_list)
 
 hidden_states = []
 for i, verb in enumerate(verb_list):
