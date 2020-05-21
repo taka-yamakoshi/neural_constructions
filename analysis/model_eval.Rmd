@@ -1,0 +1,95 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+
+fit_logistic <- function(d) {
+  fitted <- nls(human ~ 1 / (1+exp(-(phi1+phi2*predicted))),
+                start=list(phi1= -0.7, phi2=0.115),
+                data= d,
+                trace=TRUE)
+  return(predict(fitted))
+}
+
+d <- read_csv('../data/data_cleaned.csv') %>%
+  group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%
+  summarize(human = mean(DOpreference)/100) %>%
+  left_join(read_csv('../textfile/generated_pairs_gpt2_large.csv') %>% 
+              select(-DO_prob, -PD_prob, -ratio, -BehavDOpreference)) %>%
+  gather(model, predicted, ends_with("_ratio")) %>%
+  mutate(model = ifelse(model == 'GPT2_large_ratio', 'GPT2-large_ratio', model)) %>%
+  group_by(model) %>%
+  do(mutate(., predicted = fit_logistic(.)))
+```
+
+```{r}
+verbeval.toplot <- d %>% 
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%
+  group_by(verb, model, classification) %>%
+  summarize(human = mean(human),
+            predicted = mean(predicted)) %>%
+  group_by(model) %>%
+  mutate(correlation = cor(human, predicted, method = 'spearman')) %>%
+  ungroup() %>%
+  mutate(model = fct_reorder(model, correlation)) 
+
+cortext <- verbeval.toplot %>%
+  group_by(classification,  model) %>%
+  summarize(label = mean(correlation)) %>%
+  mutate(label = paste0('r = ', round(label, 2)),
+         human = .25, predicted = 0.45)
+
+verbeval.toplot %>%
+  ggplot(aes(x = human, y = predicted, color = classification, group = 1)) +
+    geom_point(size = 0.1) +
+    geom_smooth(method = 'lm', color='black') +
+    geom_text(aes(label = label), data = cortext, size = 2, color='black') +
+    facet_grid( ~ model) +
+    theme_few() +
+    labs(title="biases across 200 verbs", x = 'human judgement', y = 'model prediction') +
+    theme(aspect.ratio = 1)
+```
+
+```{r}
+conditioneval.toplot <- d %>% 
+  spread(model, predicted) %>%
+  gather(model, predicted, ends_with("_ratio"), human) %>%
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%
+  group_by(model, classification, recipient_id) %>%
+  tidyboot::tidyboot_mean(predicted, nboot = 100) %>%
+  ungroup() %>%
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%
+  mutate(model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2'))
+
+conditioneval.toplot %>%
+  ggplot(aes(x = classification, y = empirical_stat, fill = model == 'human')) +
+      geom_bar(stat = 'identity') +
+      geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+      labs(x = '', y = 'average DO preference') +
+      guides(x = guide_axis(angle = 90)) +
+      facet_grid(model ~ recipient_id) +
+      theme_few() +
+      guides(fill = FALSE) +
+      theme(aspect.ratio = 1) 
+
+ggsave("../figures/condition_evaluation.pdf", width = 10, height = 10, unit = 'in')
+```
+
+# Sanity checks
+
+```{r}
+read_csv('../textfile/generated_pairs_gpt2_large.csv') %>% 
+    select(-DO_prob, -PD_prob, -ratio, -BehavDOpreference) %>% 
+    gather(model, predicted, ends_with("_ratio")) %>%
+    ggplot(aes(x=predicted)) +
+      geom_histogram() +
+      geom_vline(xintercept = 0)+
+      facet_grid(~ model) +
+      labs(x = 'predicted PD/DO ratio') +
+      theme_few()
+`````
