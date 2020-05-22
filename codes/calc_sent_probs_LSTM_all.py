@@ -110,6 +110,16 @@ init_c1 = torch.zeros(650)
 init_h1 = torch.zeros(650)
 init_state = [init_c0,init_h0,init_c1,init_h1]
 
+def calculate_probs(sentence_data):
+    hid_state = [init_c0,init_h0,init_c1,init_h1]
+    total_probs = []
+    for i,sentence in enumerate(sentence_data):
+        hid_state, probs =  my_model.forward(sentence,hid_state)
+        total_probs.append(probs)
+        if i%100 == 0:
+            print(str(i) + " sentences done")
+    return np.array(total_probs)
+
 def calculate_probs_indiv(sentence_data):
     total_probs = []
     for i,sentence in enumerate(sentence_data):
@@ -118,6 +128,7 @@ def calculate_probs_indiv(sentence_data):
         if i%100 == 0:
             print(str(i) + " sentences done")
     return np.array(total_probs)
+
 
 DO_prob = calculate_probs_indiv(sentence_data_DO)
 PD_prob = calculate_probs_indiv(sentence_data_PD)
