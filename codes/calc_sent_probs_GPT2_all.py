@@ -26,7 +26,7 @@ def calc_sent_prob(sentence):
 
 #Load sentences
 print("Loading sentences")
-with open(PATH+'textfile/generated_pairs_LSTM.csv') as f:
+with open(PATH+'textfile/generated_pairs_xlnet.csv') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -37,8 +37,8 @@ sent_list = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for
 
 #Load the model
 print("Loading the model")
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-model = GPT2LMHeadModel.from_pretrained('gpt2')
+tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
+model = GPT2LMHeadModel.from_pretrained('gpt2-large')
 model.eval()
 
 #Calculate probability
@@ -50,16 +50,16 @@ ratio = DO_prob - PD_prob
 
 #Dump the data
 print("Dumping data")
-with open(PATH+'datafile/gpt2_DO_test.pkl','wb') as f:
+with open(PATH+'datafile/gpt2_large_DO_test.pkl','wb') as f:
     pickle.dump(DO_prob,f)
-with open(PATH+'datafile/gpt2_PD_test.pkl','wb') as f:
+with open(PATH+'datafile/gpt2_large_PD_test.pkl','wb') as f:
     pickle.dump(PD_prob,f)
-with open(PATH+'datafile/gpt2_log_ratio_test.pkl','wb') as f:
+with open(PATH+'datafile/gpt2_large_log_ratio_test.pkl','wb') as f:
     pickle.dump(ratio,f)
 
-with open(PATH+'textfile/generated_pairs_gpt2_test.csv','w') as f:
+with open(PATH+'textfile/generated_pairs_gpt2_large_test.csv','w') as f:
     writer = csv.writer(f)
-    head.extend(['GPT2_ratio'])
+    head.extend(['GPT2_large_ratio'])
     writer.writerow(head)
     for i,row in enumerate(corpus):
         row.extend([ratio[i]])
