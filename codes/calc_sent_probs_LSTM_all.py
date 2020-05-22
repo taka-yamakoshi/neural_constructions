@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 import torch
+import torch.nn.functional as F
 import csv
 import logging
 import model
@@ -40,18 +41,18 @@ with open(PATH+'datafile/id2word.pkl', 'rb') as f:
 
 
 #Load sentences
-with open(PATH+'textfile/generated_pairs_ngram.csv') as f:
+with open(PATH+'textfile/generated_pairs_gpt2_large.csv') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
     corpus = file[1:]
 sent_list = [[pair[head.index('DOsentence')],pair[head.index('PDsentence')]] for pair in corpus]
 
-sentence_data_DO = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in sentences[0].split(" ")]) for sentences in sent_list]
-sentence_data_PD = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in sentences[1].split(" ")]) for sentences in sent_list]
+sentence_data_DO = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in (sentences[0].split(" ")+["."])]) for sentences in sent_list]
+sentence_data_PD = [torch.tensor([word2id[word] if word in word2id else word2id['<unk>'] for word in (sentences[1].split(" ")+["."])]) for sentences in sent_list]
 
 
-#LSTM model
+#Pretrained LSTM model
 class trained_model():
     def __init__(self,W_in, W_x0, W_h0, b_x0, b_h0, W_x1, W_h1, b_x1, b_h1, W_out, b_out, word2id,id2word):
         return None
@@ -96,7 +97,7 @@ class trained_model():
         for i, word in enumerate(sentence):
             outvec, hid_state = self.myLSTM(word,hid_state)
             if i <= len(sentence)-2:
-                prob = torch.log(softmax(outvec))
+                prob = torch.log(F.softmax(outvec, dim=0))
                 probs += prob[sentence[i+1]].item()
         return hid_state,probs
 
@@ -107,31 +108,31 @@ init_c0 = torch.zeros(650)
 init_h0 = torch.zeros(650)
 init_c1 = torch.zeros(650)
 init_h1 = torch.zeros(650)
+init_state = [init_c0,init_h0,init_c1,init_h1]
 
-def calculate_probs(sentence_data):
-    hid_state = [init_c0,init_h0,init_c1,init_h1]
+def calculate_probs_indiv(sentence_data):
     total_probs = []
     for i,sentence in enumerate(sentence_data):
-        hid_state, probs =  my_model.forward(sentence,hid_state)
+        hid_state, probs =  my_model.forward(sentence,init_state)
         total_probs.append(probs)
         if i%100 == 0:
             print(str(i) + " sentences done")
     return np.array(total_probs)
 
-DO_prob = calculate_probs(sentence_data_DO)
-PD_prob = calculate_probs(sentence_data_PD)
+DO_prob = calculate_probs_indiv(sentence_data_DO)
+PD_prob = calculate_probs_indiv(sentence_data_PD)
 ratio = DO_prob - PD_prob
 #Save the data
-with open(PATH+'datafile/LSTM_DO.pkl','wb') as f:
+with open(PATH+'datafile/LSTM_DO_new.pkl','wb') as f:
     pickle.dump(DO_prob,f)
-with open(PATH+'datafile/LSTM_PD.pkl','wb') as f:
+with open(PATH+'datafile/LSTM_PD_new.pkl','wb') as f:
     pickle.dump(PD_prob,f)
-with open(PATH+'datafile/LSTM_log_ratio.pkl','wb') as f:
+with open(PATH+'datafile/LSTM_log_ratio_new.pkl','wb') as f:
     pickle.dump(ratio,f)
 
-with open(PATH+'textfile/generated_pairs_LSTM.csv','w') as f:
+with open(PATH+'textfile/generated_pairs_new_LSTM.csv','w') as f:
     writer = csv.writer(f)
-    head.extend(['LSTM_ratio'])
+    head.extend(['LSTM_ratio_new'])
     writer.writerow(head)
     for i,row in enumerate(corpus):
         row.extend([ratio[i]])
