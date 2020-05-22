@@ -69,6 +69,7 @@ d_judgements <- d_raw %>%
                                response, 100 - response),
          recipient_id = factor(recipient_id), 
          theme_type = factor(theme_type),
+         theme_type = fct_collapse(theme_type, indef = c('indef', 'something'), def = c('def')),
          verb = word(DOsentence, 2)) %>%
   rename(participant_id = gameid,
          set_id = setid) %>%
@@ -105,22 +106,93 @@ Break out by recipient_id.
 
 ```{r}
 d_judgements %>%
-  group_by(classification, recipient_id) %>%
-  tidyboot_mean(DOpreference, nboot = 100) %>%
+  filter(classification == 'alternating') %>%
+  group_by(recipient_id) %>%
+  tidyboot_mean(DOpreference - 50, nboot = 10) %>%
+  ungroup() %>%
   mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%
-  ggplot(aes(x = classification, y = empirical_stat)) +
+  ggplot(aes(x = recipient_id,  y = empirical_stat)) +
     geom_bar(stat = 'identity') +
     geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
-    labs(x = 'verb class', y = 'average DO preference') +
+    labs(x = 'recipient type', y = 'average DO preference') +
     guides(x = guide_axis(angle = 90)) +
-    facet_grid( ~ recipient_id) +
+    scale_fill_brewer(direction = -1) +
     theme_few() +
-    theme(aspect.ratio = 2)
+    theme(aspect.ratio = 1)
 
 ggsave("recipient_type.pdf")
 ```
 
+Compute statistics
+
+```{r}
+library(lme4)
+d_judgements %>%
+  mutate(recipient_id = case_when(recipient_id == 'shortDefinite' ~ 'short_definite',
+                                  recipient_id == 'longDefinite' ~ 'long_definite',
+                                  recipient_id == 'shortIndefinite' ~ 'short_indefinite',
+                                  recipient_id == 'longIndefinite' ~ 'long_indefinite',
+                                  recipient_id == 'pronoun' ~ 'extrashort_definite')) %>%
+  separate(recipient_id, into = c('recipient_length', 'recipient_definiteness'), sep='_') %>%
+  lmer(DOpreference ~ recipient_length + recipient_definiteness + theme_type
+                      + (1 + recipient_length + recipient_definiteness + theme_type | participant_id) 
+                      + (1 + recipient_length + recipient_definiteness + theme_type | verb), 
+       data = .) %>%
+  summary()
+```
+
 Break out by verb.
+
+```{r}
+d_judgements %>%
+  filter(recipient_id == 'pronoun') %>%
+  group_by(verb, classification) %>%
+  tidyboot_mean(DOpreference, nboot = 100) %>%
+  group_by(verb) %>%
+  mutate(grand_avg = mean(empirical_stat)) %>%
+  ungroup() %>%
+  mutate(verb = fct_reorder(verb, grand_avg)) %>%
+  ggplot(aes(x = verb, y = empirical_stat, fill = classification)) +
+    geom_bar(stat = 'identity') +
+    geom_hline(yintercept = 50, linetype = 'dotted') +
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+    labs(x = '', y = 'average DO preference') +
+    guides(x = guide_axis(n.dodge = 1, angle = 90, check.overlap = T)) +
+    theme_few() +
+    theme(aspect.ratio = 1/10, legend.position = 'top')
+
+ggsave("../figures/verbs_aggregated.pdf", width = 10, height = 3, units = 'in')
+```
+
+Cross-validate rater agreement for verb ranking?
+
+```{r}
+smp_size <- floor(0.5 * nrow(d_judgements))
+
+map_dbl(1:100, ~ {
+  d_judgements %>%
+    #filter(recipient_id == 'pronoun') %>%
+    sample_frac(1) %>%
+    mutate(split = row_number() < smp_size) %>%
+    group_by(verb, split) %>%
+    summarize(DOpreference = mean(DOpreference)) %>%
+    spread(split, DOpreference) %>%
+    ungroup() %>%
+    summarize(c = cor(`TRUE`, `FALSE`, method = 'spearman')) %>%
+    pull(c)
+}) %>%
+  qplot() + theme_few()
+```
+
+## Sanity checks
+
+How often do people rate DO as absolutely better? (i.e. >50%)
+
+```{r}
+d_judgements %>%
+  group_by(classification, recipient_id) %>%
+  summarize(pct_DO_better = mean(DOpreference_binary))
+```
 
 ```{r}
 d_judgements %>%
@@ -145,32 +217,4 @@ d_judgements %>%
     theme(aspect.ratio = 1/10)
 
 ggsave("verbs_aggregated_split.pdf", width = 20, height = 7, units = 'in')
-```
-
-Cross-validate rater agreement for verb ranking?
-
-```{r}
-smp_size <- floor(0.5 * nrow(d_judgements))
-
-map_dbl(1:100, ~ {
-  d_judgements %>%
-    #filter(recipient_id == 'pronoun') %>%
-    sample_frac(1) %>%
-    mutate(split = row_number() < smp_size) %>%
-    group_by(verb, split) %>%
-    summarize(DOpreference = mean(DOpreference)) %>%
-    spread(split, DOpreference) %>%
-    ungroup() %>%
-    summarize(c = cor(`TRUE`, `FALSE`, method = 'spearman')) %>%
-    pull(c)
-}) %>%
-  qplot() + theme_few()
-```
-
-How often do people rate DO as better?
-
-```{r}
-d_judgements %>%
-  group_by(classification, recipient_id) %>%
-  summarize(pct_DO_better = mean(DOpreference_binary))
 ```
