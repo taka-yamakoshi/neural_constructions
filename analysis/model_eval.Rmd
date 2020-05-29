@@ -6,6 +6,8 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(tidyboot)
+library(ggpubr)
 library(ggthemes)
 
 fit_logistic <- function(d) {
@@ -19,9 +21,10 @@ fit_logistic <- function(d) {
 d <- read_csv('../data/data_cleaned.csv') %>%
   group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%
   summarize(human = mean(DOpreference)/100) %>%
-  left_join(read_csv('../textfile/generated_pairs_new_LSTM.csv') %>% 
-              select(-DO_prob, -PD_prob, -BehavDOpreference, -LSTM_ratio)) %>%
-  rename(`GPT2-large_ratio` = GPT2_large_ratio, `LSTM_ratio` = LSTM_ratio_new) %>%
+  left_join(read_csv('../textfile/generated_pairs_latest.csv') %>% 
+              select(-DO_prob, -PD_prob, -XLNet_ratio, -BehavDOpreference)) %>%
+  rename(`GPT2-large_ratio` = GPT2_large_ratio,
+         `LSTM-large_ratio` = Big_LSTM_ratio) %>%
   gather(model, predicted, ends_with("_ratio")) #%>%
   # group_by(model) %>%
   # do(mutate(., predicted = fit_logistic(.)))
@@ -100,7 +103,7 @@ conditioneval.toplot <- d %>%
   tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%
   ungroup() %>%
   mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),
-         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2'))
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large'))
 
 panelB <- conditioneval.toplot %>%
   ggplot(aes(x = recipient_id, y = empirical_stat)) +
@@ -114,7 +117,7 @@ panelB <- conditioneval.toplot %>%
       scale_fill_brewer(direction = -1) +
       theme(aspect.ratio = 1) 
 
-ggarrange(panelA, panelB, widths = c(1,4.8))
+ggarrange(panelA, panelB, widths = c(1,4))
 ggsave("../figures/condition_evaluation.pdf", width = 15, height = 5, unit = 'in')
 ```
 

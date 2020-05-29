@@ -135,9 +135,10 @@ d_judgements %>%
                                   recipient_id == 'pronoun' ~ 'extrashort_definite')) %>%
   separate(recipient_id, into = c('recipient_length', 'recipient_definiteness'), sep='_') %>%
   lmer(DOpreference ~ recipient_length + recipient_definiteness + theme_type
-                      + (1 + recipient_length + recipient_definiteness + theme_type | participant_id) 
-                      + (1 + recipient_length + recipient_definiteness + theme_type | verb), 
-       data = .) %>%
+                      + (1 + recipient_length + recipient_definiteness| participant_id) 
+                      + (1 + recipient_length + recipient_definiteness| verb), 
+       data = .,
+      control = lmerControl(calc.derivs = FALSE)) %>%
   summary()
 ```
 
