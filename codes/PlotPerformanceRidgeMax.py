@@ -8,6 +8,7 @@ args = sys.argv
 with open("mypath.txt") as f:
     PATH = f.read()
 
+#Main figure
 LSTM_verb = np.zeros((10,4))
 LSTM_first_obj = np.zeros((10,4))
 LSTM_eos = np.zeros((10,4))
@@ -88,6 +89,9 @@ plt.show()
 plt.imshow(t_matrix_eos)
 plt.show()
 
+
+#Appendix: for individual layer
+#Verb
 fig, axis = plt.subplots()
 plot_list_LSTM = axis.bar([0,1,2,3],np.array([np.average(LSTM_verb[:,i]) for i in range(4)]),yerr =np.array([np.std(LSTM_verb[:,i])/np.sqrt(len(LSTM_verb[:,i])) for i in range(4)]),color='lightseagreen',label='LSTM')
 plot_list_LSTM_large = axis.bar([4],np.average(LSTM_large_verb),yerr=np.std(LSTM_large_verb)/np.sqrt(len(LSTM_large_verb)),color='teal',label='LSTM_large')
@@ -96,7 +100,7 @@ plot_list_GPT2 = axis.bar(np.arange(18,55),np.array([np.average(GPT2_large_verb[
 plt.legend(bbox_to_anchor=(-0.018, 1.03), loc='upper left', borderaxespad=1,fontsize=8)
 plt.show()
 
-
+#First_obj
 fig, axis = plt.subplots()
 plot_list_LSTM = axis.bar([0,1,2,3],np.array([np.average(LSTM_first_obj[:,i]) for i in range(4)]),yerr =np.array([np.std(LSTM_first_obj[:,i])/np.sqrt(len(LSTM_first_obj[:,i])) for i in range(4)]),color='lightseagreen',label='LSTM')
 plot_list_LSTM_large = axis.bar([4],np.average(LSTM_large_first_obj),yerr=np.std(LSTM_large_first_obj)/np.sqrt(len(LSTM_large_first_obj)),color='teal',label='LSTM_large')
@@ -105,6 +109,7 @@ plot_list_GPT2 = axis.bar(np.arange(18,55),np.array([np.average(GPT2_large_first
 plt.legend(bbox_to_anchor=(-0.018, 1.03), loc='upper left', borderaxespad=1,fontsize=8)
 plt.show()
 
+#EOS
 fig, axis = plt.subplots()
 plot_list_LSTM = axis.bar([0,1,2,3],np.array([np.average(LSTM_eos[:,i]) for i in range(4)]),yerr =np.array([np.std(LSTM_eos[:,i])/np.sqrt(len(LSTM_eos[:,i])) for i in range(4)]),color='lightseagreen',label='LSTM')
 plot_list_LSTM_large = axis.bar([4],np.average(LSTM_large_eos),yerr=np.std(LSTM_large_eos)/np.sqrt(len(LSTM_large_eos)),color='teal',label='LSTM_large')
