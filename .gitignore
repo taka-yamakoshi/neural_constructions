@@ -4,3 +4,7 @@ lm_1b_utils.py
 model.py
 .Rproj.user
 behavioral_experiment/tangrams/
+datafile/hidden_states_gpt2.zip
+datafile/hidden_states_gpt2-large.zip
+datafile/hidden_states_lstm.zip
+datafile/hidden_states_lstm-large.zip
