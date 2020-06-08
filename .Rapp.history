@@ -1,0 +1,366 @@
+---#
+title: "R Notebook"#
+output: html_notebook#
+---#
+```{r}#
+library(tidyverse)#
+library(tidyboot)#
+library(ggpubr)#
+library(ggthemes)#
+#
+fit_logistic <- function(d) {#
+  fitted <- nls(human ~ 1 / (1+exp(-(phi1+phi2*predicted))),#
+                start=list(phi1= -0.7, phi2=0.115),#
+                data= d,#
+                trace=TRUE)#
+  return(predict(fitted))#
+}#
+#
+d <- read_csv('../data/data_cleaned.csv') %>%#
+  group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%#
+  summarize(human = mean(DOpreference)/100) %>%#
+  left_join(read_csv('../textfile/generated_pairs_latest.csv') %>% #
+              select(-DO_prob, -PD_prob, -XLNet_ratio, -BehavDOpreference)) %>%#
+  rename(`GPT2-large_ratio` = GPT2_large_ratio,#
+         `LSTM-large_ratio` = Big_LSTM_ratio) %>%#
+  gather(model, predicted, ends_with("_ratio")) #%>%#
+  # group_by(model) %>%#
+  # do(mutate(., predicted = fit_logistic(.)))#
+```#
+#
+## Do models represent any difference between alternating & non-alternating?#
+#
+```{r}#
+d %>%#
+  group_by(model, classification) %>%#
+  tidyboot_mean(predicted, nboot = 100) %>%#
+  ggplot(aes(x = classification, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+    facet_wrap(~ model) +#
+    labs(x = 'verb class', y = 'average DO preference') +#
+    theme_few() #
+```#
+#
+## Full pattern of correlation across verbs#
+#
+```{r}#
+verbeval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  group_by(verb, model, classification) %>%#
+  summarize(human = mean(human),#
+            predicted = mean(predicted)) %>%#
+  group_by(model) %>%#
+  mutate(correlation = cor(human, predicted, method = 'pearson')) %>%#
+  ungroup() %>%#
+  mutate(model = fct_reorder(model, correlation)) #
+#
+cortext <- verbeval.toplot %>%#
+  group_by(classification,  model) %>%#
+  summarize(label = mean(correlation)) %>%#
+  mutate(label = paste0('r = ', round(label, 2)),#
+         human = .5, predicted = -15)#
+#
+verbeval.toplot %>%#
+  ggplot(aes(x = human, y = predicted, color = classification, group = 1)) +#
+    geom_point(size = 0.1) +#
+    geom_smooth(method = 'lm', color='black') +#
+    geom_text(aes(label = label), data = cortext, size = 3.5, color='black') +#
+    facet_grid( ~ model) +#
+    theme_few() +#
+    labs(x = 'human judgement', y = 'model prediction') +#
+    guides(colour = guide_legend(override.aes = list(size=2), title = 'verb class')) +#
+    theme(aspect.ratio = 1, legend.position = 'top')#
+#
+ggsave('../figures/verb_bias_scatter.pdf', width = 8, height=3)#
+```#
+#
+```{r}#
+panelA <- read_csv('../data/data_cleaned.csv') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(recipient_id) %>%#
+  tidyboot_mean(DOpreference - 50, nboot = 10) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%#
+  mutate(model = 'human') %>%#
+  ggplot(aes(x = recipient_id, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+    labs(x = '', y = 'average DO preference') +#
+    guides(x = guide_axis(angle = 90)) +#
+    ylim(-30,30) +#
+    facet_grid( ~ model) +#
+    scale_fill_brewer(direction = -1) +#
+    theme_few() +#
+    theme(aspect.ratio = 1)#
+#
+conditioneval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(model, recipient_id) %>%#
+  tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large'))#
+#
+panelB <- conditioneval.toplot %>%#
+  ggplot(aes(x = recipient_id, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+      labs(x = '', y = '') +#
+      guides(x = guide_axis(angle = 90)) +#
+      facet_grid( ~ model) +#
+      theme_few() +#
+      guides() +#
+      scale_fill_brewer(direction = -1) +#
+      theme(aspect.ratio = 1) #
+#
+ggarrange(panelA, panelB, widths = c(1,4))#
+ggsave("../figures/condition_evaluation.pdf", width = 15, height = 5, unit = 'in')#
+```#
+#
+# Sanity checks#
+#
+```{r}#
+read_csv('../textfile/generated_pairs_new_lstm.csv') %>% #
+    select(-DO_prob, -PD_prob,  -BehavDOpreference) %>% #
+    rename(LSTM_new_ratio= LSTM_ratio_new) %>%#
+    gather(model, predicted, ends_with("_ratio")) %>%#
+    ggplot(aes(x=predicted)) +#
+      geom_histogram() +#
+      geom_vline(xintercept = 0)+#
+      facet_grid(~ model) +#
+      labs(x = 'predicted PD/DO ratio') +#
+      theme_few()#
+```#
+#
+Split out conditions by theme definiteness also#
+#
+```{r}#
+library(ggpubr)#
+#
+panelA <- read_csv('../data/data_cleaned.csv') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(recipient_id, theme_type) %>%#
+  tidyboot_mean(DOpreference - 50, nboot = 10) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         theme_type = fct_relevel(theme_type, 'def','something','indef')) %>%#
+  mutate(model = 'human') %>%#
+  ggplot(aes(x = recipient_id, fill = theme_type, y = empirical_stat)) +#
+    geom_bar(stat = 'identity', position = dodge) +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0, position = dodge) +#
+    labs(x = '', y = 'average DO preference') +#
+    guides(x = guide_axis(angle = 90)) +#
+    ylim(-30,30) +#
+    facet_grid( ~ model) +#
+    scale_fill_brewer(direction = -1) +#
+    theme_few() +#
+  guides(fill=F) +#
+    theme(aspect.ratio = 1)#
+#
+conditioneval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(model, recipient_id, theme_type) %>%#
+  tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         theme_type = fct_relevel(theme_type, 'def','something','indef'),#
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2'))#
+#
+panelB <- conditioneval.toplot %>%#
+  ggplot(aes(x = recipient_id, fill = theme_type,y = empirical_stat)) +#
+    geom_bar(stat = 'identity', position = dodge) +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0, position = dodge) +#
+      labs(x = '', y = '') +#
+      guides(x = guide_axis(angle = 90)) +#
+      facet_grid( ~ model) +#
+      theme_few() +#
+      guides() +#
+      scale_fill_brewer(direction = -1) +#
+      theme(aspect.ratio = 1) #
+#
+ggarrange(panelA, panelB, widths = c(1,4))#
+ggsave("../figures/condition_evaluation_by_theme.pdf", width = 20, height = 8, unit = 'in')#
+```
+library(tidyverse)#
+library(tidyboot)#
+library(ggpubr)#
+library(ggthemes)#
+#
+fit_logistic <- function(d) {#
+  fitted <- nls(human ~ 1 / (1+exp(-(phi1+phi2*predicted))),#
+                start=list(phi1= -0.7, phi2=0.115),#
+                data= d,#
+                trace=TRUE)#
+  return(predict(fitted))#
+}#
+#
+d <- read_csv('../data/data_cleaned.csv') %>%#
+  group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%#
+  summarize(human = mean(DOpreference)/100) %>%#
+  left_join(read_csv('../textfile/generated_pairs_latest.csv') %>% #
+              select(-DO_prob, -PD_prob, -XLNet_ratio, -BehavDOpreference)) %>%#
+  rename(`GPT2-large_ratio` = GPT2_large_ratio,#
+         `LSTM-large_ratio` = Big_LSTM_ratio) %>%#
+  gather(model, predicted, ends_with("_ratio")) #%>%#
+  # group_by(model) %>%#
+  # do(mutate(., predicted = fit_logistic(.)))#
+```#
+#
+## Do models represent any difference between alternating & non-alternating?#
+#
+```{r}#
+d %>%#
+  group_by(model, classification) %>%#
+  tidyboot_mean(predicted, nboot = 100) %>%#
+  ggplot(aes(x = classification, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+    facet_wrap(~ model) +#
+    labs(x = 'verb class', y = 'average DO preference') +#
+    theme_few() #
+```#
+#
+## Full pattern of correlation across verbs#
+#
+```{r}#
+verbeval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  group_by(verb, model, classification) %>%#
+  summarize(human = mean(human),#
+            predicted = mean(predicted)) %>%#
+  group_by(model) %>%#
+  mutate(correlation = cor(human, predicted, method = 'pearson')) %>%#
+  ungroup() %>%#
+  mutate(model = fct_reorder(model, correlation)) #
+#
+cortext <- verbeval.toplot %>%#
+  group_by(classification,  model) %>%#
+  summarize(label = mean(correlation)) %>%#
+  mutate(label = paste0('r = ', round(label, 2)),#
+         human = .5, predicted = -15)#
+#
+verbeval.toplot %>%#
+  ggplot(aes(x = human, y = predicted, color = classification, group = 1)) +#
+    geom_point(size = 0.1) +#
+    geom_smooth(method = 'lm', color='black') +#
+    geom_text(aes(label = label), data = cortext, size = 3.5, color='black') +#
+    facet_grid( ~ model) +#
+    theme_few() +#
+    labs(x = 'human judgement', y = 'model prediction') +#
+    guides(colour = guide_legend(override.aes = list(size=2), title = 'verb class')) +#
+    theme(aspect.ratio = 1, legend.position = 'top')#
+#
+ggsave('../figures/verb_bias_scatter.pdf', width = 8, height=3)#
+```#
+#
+```{r}#
+panelA <- read_csv('../data/data_cleaned.csv') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(recipient_id) %>%#
+  tidyboot_mean(DOpreference - 50, nboot = 10) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%#
+  mutate(model = 'human') %>%#
+  ggplot(aes(x = recipient_id, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+    labs(x = '', y = 'average DO preference') +#
+    guides(x = guide_axis(angle = 90)) +#
+    ylim(-30,30) +#
+    facet_grid( ~ model) +#
+    scale_fill_brewer(direction = -1) +#
+    theme_few() +#
+    theme(aspect.ratio = 1)#
+#
+conditioneval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(model, recipient_id) %>%#
+  tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large'))#
+#
+panelB <- conditioneval.toplot %>%#
+  ggplot(aes(x = recipient_id, y = empirical_stat)) +#
+    geom_bar(stat = 'identity') +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +#
+      labs(x = '', y = '') +#
+      guides(x = guide_axis(angle = 90)) +#
+      facet_grid( ~ model) +#
+      theme_few() +#
+      guides() +#
+      scale_fill_brewer(direction = -1) +#
+      theme(aspect.ratio = 1) #
+#
+ggarrange(panelA, panelB, widths = c(1,4))#
+ggsave("../figures/condition_evaluation.pdf", width = 15, height = 5, unit = 'in')#
+```#
+#
+# Sanity checks#
+#
+```{r}#
+read_csv('../textfile/generated_pairs_new_lstm.csv') %>% #
+    select(-DO_prob, -PD_prob,  -BehavDOpreference) %>% #
+    rename(LSTM_new_ratio= LSTM_ratio_new) %>%#
+    gather(model, predicted, ends_with("_ratio")) %>%#
+    ggplot(aes(x=predicted)) +#
+      geom_histogram() +#
+      geom_vline(xintercept = 0)+#
+      facet_grid(~ model) +#
+      labs(x = 'predicted PD/DO ratio') +#
+      theme_few()#
+```#
+#
+Split out conditions by theme definiteness also#
+#
+```{r}#
+library(ggpubr)#
+#
+panelA <- read_csv('../data/data_cleaned.csv') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(recipient_id, theme_type) %>%#
+  tidyboot_mean(DOpreference - 50, nboot = 10) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         theme_type = fct_relevel(theme_type, 'def','something','indef')) %>%#
+  mutate(model = 'human') %>%#
+  ggplot(aes(x = recipient_id, fill = theme_type, y = empirical_stat)) +#
+    geom_bar(stat = 'identity', position = dodge) +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0, position = dodge) +#
+    labs(x = '', y = 'average DO preference') +#
+    guides(x = guide_axis(angle = 90)) +#
+    ylim(-30,30) +#
+    facet_grid( ~ model) +#
+    scale_fill_brewer(direction = -1) +#
+    theme_few() +#
+  guides(fill=F) +#
+    theme(aspect.ratio = 1)#
+#
+conditioneval.toplot <- d %>% #
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%#
+  filter(classification == 'alternating') %>%#
+  group_by(model, recipient_id, theme_type) %>%#
+  tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%#
+  ungroup() %>%#
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),#
+         theme_type = fct_relevel(theme_type, 'def','something','indef'),#
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2'))#
+#
+panelB <- conditioneval.toplot %>%#
+  ggplot(aes(x = recipient_id, fill = theme_type,y = empirical_stat)) +#
+    geom_bar(stat = 'identity', position = dodge) +#
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0, position = dodge) +#
+      labs(x = '', y = '') +#
+      guides(x = guide_axis(angle = 90)) +#
+      facet_grid( ~ model) +#
+      theme_few() +#
+      guides() +#
+      scale_fill_brewer(direction = -1) +#
+      theme(aspect.ratio = 1) #
+#
+ggarrange(panelA, panelB, widths = c(1,4))#
+ggsave("../figures/condition_evaluation_by_theme.pdf", width = 20, height = 8, unit = 'in')

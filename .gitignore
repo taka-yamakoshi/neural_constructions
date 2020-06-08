@@ -1,6 +1,6 @@
-datafile/
 .DS_Store
-codes/mypath.txt
-memo/
-codes/test.py
+lm_1b_data/
+lm_1b_utils.py
+model.py
 .Rproj.user
+behavioral_experiment/tangrams/
