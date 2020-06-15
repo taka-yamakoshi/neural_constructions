@@ -10,3 +10,8 @@ datafile/hidden_states_lstm.zip
 datafile/hidden_states_lstm-large.zip
 datafile/ngram.arpa
 datafile/hidden650_batch128_dropout0.2_lr20.0.pt
+README.tex
+output.tex
+output.pdf
+README.log
+README.aux
