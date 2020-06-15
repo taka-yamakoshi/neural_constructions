@@ -2,6 +2,8 @@
 
 To run this experiment on your local machine:
 
+0. Download jsPsych from `https://github.com/jspsych/jsPsych/releases` and place the folder under `behavioral_experiment`.
+
 1. navigate to the location where you want to create your project, and enter 
    ```
    git clone https://github.com/hawkrobe/tangrams.git
@@ -10,7 +12,7 @@ To run this experiment on your local machine:
 
 2. Make sure node.js and npm (the node package manager) are installed on your machine. Node.js sponsors an [official download](http://nodejs.org/download/) for all systems. For an advanced installation, there are good instructions [here](https://gist.github.com/isaacs/579814).
 
-3. Run ```npm install``` at the command line in the `behavioral_experiments` directory to install dependencies. 
+3. Run ```npm install``` at the command line in the `behavioral_experiment` directory to install dependencies. 
 
 4. Finally, to run the experiment, run ```node app.js``` at the command line. You should expect to see the following message:
    ```
