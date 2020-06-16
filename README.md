@@ -12,12 +12,14 @@ is the basic command for calculating sentence probabilities.
 
 In addition to this, the following preparation is needed for LSTMs.
 
-For `lstm`, clone `https://github.com/facebookresearch/colorlessgreenRNNs`, and place `src/language_models/model.py` in the main repository, `neural_constructions`.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from the page, `https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src`, and put it in the `datafile` repository.
+For `lstm`, clone `https://github.com/facebookresearch/colorlessgreenRNNs`, and place `src/language_models/model.py` in the main repository, `neural_constructions`.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from the page, `https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src`, and put it in the `datafile` directory.
 
-For `lstm-large`, create `lm_1b_datafile` directory under `neural_constructions`.  Then download data files from `https://github.com/tensorflow/models/tree/master/research/lm_1b`, and place them inside `lm_1b_data`.  In addition, clone the above repository and include `data_utils.py` in `neural_constructions`. 
+For `lstm-large`, create `lm_1b_data` directory under `neural_constructions`.  Then download data files from `https://github.com/tensorflow/models/tree/master/research/lm_1b`, and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `neural_constructions`. 
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
-`python CalcSentProbs.py --pbtxt lm_1b_data/graph-2016-09-10.pbtxt --ckpt 'lm_1b_data/ckpt-*' --vocab_file lm_1b_data/vocab-2016-09-10.txt`
+```{python3}
+python CalcSentProbs.py lstm-large --pbtxt lm_1b_data/graph-2016-09-10.pbtxt --ckpt 'lm_1b_data/ckpt-*' --vocab_file lm_1b_data/vocab-2016-09-10.txt
+```
 
 ## Extract hidden states
 ```{python3}
@@ -30,7 +32,9 @@ is the basic command for extracting hidden states.
 For LSTMs, you need the same preparation as above.
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
-`python ExtractHidden.py --pbtxt lm_1b_data/graph-2016-09-10.pbtxt --ckpt 'lm_1b_data/ckpt-*' --vocab_file lm_1b_data/vocab-2016-09-10.txt`
+```{python3}
+python ExtractHidden.py lstm-large --pbtxt lm_1b_data/graph-2016-09-10.pbtxt --ckpt 'lm_1b_data/ckpt-*' --vocab_file lm_1b_data/vocab-2016-09-10.txt
+```
 
 ## Ridge regression
 ```{python3}
@@ -42,5 +46,5 @@ is the basic command for running the ridge regression.
 `[id]` is for running this code multiple times.  In our experiment, we ran this code 10 times (id = 0~9).
 
 ## Produce figures
-Figure 1 are created by `behavioral.Rmd`, and Figures 2 and 3 are by `model_eval.Rmd`.
+Figure 1 is created by `behavioral.Rmd`, and Figures 2 and 3 are created by `model_eval.Rmd`.
 `PlotReg.py` is a sample code for plotting the results for ridge regression.
