@@ -10,11 +10,13 @@ python CalcSentProbs.py [model_name]
 is the basic command for calculating sentence probabilities.
 `[model_name]` can be one of the following: `ngram`, `lstm`, `lstm-large`, `bert`, `gpt2`, and `gpt2-large`.
 
-In addition to this, the following preparation is needed for LSTMs.
+In addition to this, the following preparation is needed for the ngram and the LSTMs.
 
-For `lstm`, clone `https://github.com/facebookresearch/colorlessgreenRNNs`, and place `src/language_models/model.py` in the main repository, `neural_constructions`.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from the page, `https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src`, and put it in the `datafile` directory.
+For `ngram`, you need `.arpa` file.  For details as to how to create `.arpa`, see [kenlm](https://github.com/kpu/kenlm).  We created `.arpa` file using the 80M Wikipedia data provided on [LM_syneval](https://github.com/TalLinzen/LM_syneval), which was also used for training the smaller LSTM we used for evaluation.
 
-For `lstm-large`, create `lm_1b_data` directory under `neural_constructions`.  Then download data files from `https://github.com/tensorflow/models/tree/master/research/lm_1b`, and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `neural_constructions`. 
+For `lstm`, clone [colorlessgreenRNNs](https://github.com/facebookresearch/colorlessgreenRNNs), and place `src/language_models/model.py` in the main repository, `neural_constructions`.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from [here](https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src), and put it in the `datafile` directory.
+
+For `lstm-large`, create `lm_1b_data` directory under `neural_constructions`.  Then download data files from [here](https://github.com/tensorflow/models/tree/master/research/lm_1b), and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `neural_constructions`. 
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
 ```{python3}

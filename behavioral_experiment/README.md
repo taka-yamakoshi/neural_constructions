@@ -2,7 +2,7 @@
 
 To run this experiment on your local machine:
 
-0. Download jsPsych from `https://github.com/jspsych/jsPsych/releases` and place the folder under `behavioral_experiment`.  If the version is other than 6.1.0, you need to replace `jpsych-6.1.0` in  `experiment.html`.
+0. Download jsPsych from [here](https://github.com/jspsych/jsPsych/releases) and place the folder under `behavioral_experiment`.  If the version is other than 6.1.0, you need to replace `jpsych-6.1.0` in  `experiment.html`.
 
 1. navigate to the location where you want to create your project, and enter 
    ```
