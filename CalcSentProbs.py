@@ -31,11 +31,11 @@ ratio = DO_prob - PD_prob
 
 #Dump the data
 print("Dumping data")
-with open('datafile/'+args[1]+'_DO.pkl','wb') as f:
+with open(f'datafile/{args[1]}_DO.pkl','wb') as f:
     pickle.dump(DO_prob,f)
-with open('datafile/'+args[1]+'_PD.pkl','wb') as f:
+with open(f'datafile/{args[1]}_PD.pkl','wb') as f:
     pickle.dump(PD_prob,f)
-with open('datafile/'+args[1]+'_ratio.pkl','wb') as f:
+with open(f'datafile/{args[1]}_ratio.pkl','wb') as f:
     pickle.dump(ratio,f)
 
 with open('csvfiles/generated_pairs_with_results.csv') as f:
