@@ -38,16 +38,22 @@ with open('datafile/'+args[1]+'_PD.pkl','wb') as f:
 with open('datafile/'+args[1]+'_ratio.pkl','wb') as f:
     pickle.dump(ratio,f)
 
+with open('csvfiles/generated_pairs_with_results.csv') as f:
+    reader = csv.reader(f)
+    file = [row for row in reader]
+    head = file[0]
+    text = file[1:]
+
 with open('csvfiles/generated_pairs_with_results.csv','w') as f:
-    if args[1] in head:
+    if f'{args[1]}_ratio' in head:
         writer = csv.writer(f)
         writer.writerow(head)
         for i,row in enumerate(text):
-            row[head.index(args[1]+'_ratio')] = ratio[i]
+            row[head.index(f'{args[1]}_ratio')] = ratio[i]
             writer.writerow(row)
     else:
         writer = csv.writer(f)
-        head.append(args[1]+'_ratio')
+        head.append(f'{args[1]}_ratio')
         writer.writerow(head)
         for i,row in enumerate(text):
             row.append(ratio[i])
