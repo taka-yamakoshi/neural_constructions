@@ -20,7 +20,7 @@ def GeneratePD(subject,verb,particle,recipient,theme):
     return sentence
 
 
-with open('../csvfiles/SWBD.csv') as f:
+with open('SWBD.csv') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -51,7 +51,7 @@ with open('subjects_list.txt','r') as f:
     subjects = f.read().split('\n')[:-1]
 assert len(subjects) == len(text)
 
-with open('../csvfiles/GeneratedSentsSWBD.csv','w') as f:
+with open('GeneratedSentsSWBD.csv','w') as f:
     writer = csv.writer(f)
     writer.writerow(new_head)
     for id,line in enumerate(text):

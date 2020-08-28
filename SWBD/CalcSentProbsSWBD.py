@@ -4,13 +4,13 @@ import torch
 import torch.nn.functional as F
 import csv
 import sys
+sys.path.append('..')
 from CalcSentProbsModel import CalcSentProbsModel
 
-sys.path.append('..')
 args = sys.argv
 
 #Load sentences
-with open('csvfiles/PrunedGeneratedSentsSWBD.csv','r') as f:
+with open('PrunedGeneratedSentsSWBD.csv','r') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -31,29 +31,29 @@ ratio = DO_prob - PD_prob
 
 #Dump the data
 print("Dumping data")
-with open(f'datafile/SWBD_{args[1]}_DO.pkl','wb') as f:
+with open(f'../datafile/SWBD_{args[1]}_DO.pkl','wb') as f:
     pickle.dump(DO_prob,f)
-with open(f'datafile/SWBD_{args[1]}_PD.pkl','wb') as f:
+with open(f'../datafile/SWBD_{args[1]}_PD.pkl','wb') as f:
     pickle.dump(PD_prob,f)
-with open(f'datafile/SWBD_{args[1]}_ratio.pkl','wb') as f:
+with open(f'../datafile/SWBD_{args[1]}_ratio.pkl','wb') as f:
     pickle.dump(ratio,f)
 
-with open('csvfiles/PrunedGeneratedSentsSWBDResults.csv','r') as f:
+with open('PrunedGeneratedSentsSWBDResults.csv','r') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
     text = file[1:]
 
-with open('csvfiles/PrunedGeneratedSentsSWBDResults.csv','w') as f:
+with open('PrunedGeneratedSentsSWBDResults.csv','w') as f:
     if f'{args[1]}_ratio' in head:
         writer = csv.writer(f)
         writer.writerow(head)
         for i,row in enumerate(text):
-            row[head.index(args[1]+'_ratio')] = ratio[i]
+            row[head.index(f'{args[1]}_ratio')] = ratio[i]
             writer.writerow(row)
     else:
         writer = csv.writer(f)
-        head.append(args[1]+'_ratio')
+        head.append(f'{args[1]}_ratio')
         writer.writerow(head)
         for i,row in enumerate(text):
             row.append(ratio[i])
