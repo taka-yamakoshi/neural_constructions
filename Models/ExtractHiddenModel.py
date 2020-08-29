@@ -4,9 +4,8 @@ import numpy as np
 import torch.nn.functional as F
 import pickle
 import tensorflow as tf
-import sys
 from google.protobuf import text_format
-import data_utils
+from . import data_utils
 from multiprocessing import Pool
 
 class ExtractHiddenModel:

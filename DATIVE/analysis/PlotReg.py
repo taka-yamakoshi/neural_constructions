@@ -17,7 +17,7 @@ positions = ['verb','first_obj','eos']
 for i, model in enumerate(models):
     for j, position in enumerate(positions):
         for k in range(10):
-            with open('datafile/test_performance_'+model+'_'+position+'_'+str(k)+'.pkl','rb') as f:
+            with open('../data/test_performance_'+model+'_'+position+'_'+str(k)+'.pkl','rb') as f:
                 score_data[i][j][k] = pickle.load(f)
 
 score_ave = [np.average(model_score,axis=1) for model_score in score_data]

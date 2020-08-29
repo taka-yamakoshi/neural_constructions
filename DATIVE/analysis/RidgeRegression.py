@@ -11,15 +11,15 @@ sys.path.append('..')
 args = sys.argv
 
 #Load the hidden states
-with open('datafile/hidden_states_'+args[1]+'_'+args[2]+'_DO.pkl','rb') as f:
+with open(f'../data/hidden_states_{args[1]}_{args[2]}_DO.pkl','rb') as f:
     hidden_DO = pickle.load(f)
-with open('datafile/hidden_states_'+args[1]+'_'+args[2]+'_PD.pkl','rb') as f:
+with open(f'../data/hidden_states_{args[1]}_{args[2]}_PD.pkl','rb') as f:
     hidden_PD = pickle.load(f)
 num_layers = hidden_DO.shape[1]
 hidden_dim = hidden_DO.shape[2]
 
 #Load labels
-with open('csvfiles/generated_pairs_with_results.csv') as f:
+with open('../data/generated_pairs_with_results.csv') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -97,7 +97,7 @@ for layer_num in range(num_layers):
 
 
 #Dump the train performance and parameters
-with open('datafile/test_performance_'+args[1]+'_'+args[2]+'_'+args[3]+'.pkl','wb') as f:
+with open(f'../data/test_performance_{args[1]}_{args[2]}_{args[3]}.pkl','wb') as f:
     pickle.dump(performance,f)
-with open('datafile/alpha_'+args[1]+'_'+args[2]+'_'+arg[3]+'.pkl','wb') as f:
+with open(f'../data/alpha_{args[1]}_{args[2]}_{arg[3]}.pkl','wb') as f:
     pickle.dump(alpha_list,f)

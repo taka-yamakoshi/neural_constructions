@@ -4,9 +4,8 @@ import numpy as np
 import torch.nn.functional as F
 import pickle
 import tensorflow as tf
-import sys
 from google.protobuf import text_format
-import data_utils
+from . import data_utils
 from multiprocessing import Pool
 
 class CalcSentProbsModel:
@@ -15,13 +14,13 @@ class CalcSentProbsModel:
 
     def load_model(self):
         if self.model_name == 'lstm':
-            with open('datafile/hidden650_batch128_dropout0.2_lr20.0.pt', 'rb') as f:
+            with open('hidden650_batch128_dropout0.2_lr20.0.pt', 'rb') as f:
                 ##Our current code only works with CPU##
                 self.model = torch.load(f, map_location=torch.device('cpu'))
             self.model.eval()
-            with open('datafile/word2id.pkl', 'rb') as f:
+            with open('word2id.pkl', 'rb') as f:
                 self.word2id = pickle.load(f)
-            with open('datafile/id2word.pkl', 'rb') as f:
+            with open('id2word.pkl', 'rb') as f:
                 self.id2word = pickle.load(f)
         elif self.model_name == 'lstm-large':
             FLAGS = tf.compat.v1.flags.FLAGS
@@ -51,7 +50,7 @@ class CalcSentProbsModel:
             self.mask_id = self.tokenizer.encode("[MASK]")[1:-1][0]
         elif self.model_name == 'ngram':
             import kenlm
-            self.model = kenlm.Model('datafile/ngram.arpa')
+            self.model = kenlm.Model('ngram.arpa')
                 
         else:
             print("Invalid model name")

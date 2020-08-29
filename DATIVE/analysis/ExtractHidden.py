@@ -4,13 +4,13 @@ import torch
 import torch.nn.functional as F
 import csv
 import sys
-from ExtractHiddenModel import ExtractHiddenModel
+sys.path.append('../..')
+from Models.ExtractHiddenModel import ExtractHiddenModel
 
-sys.path.append('..')
 args = sys.argv
 
 #Load sentences
-with open('experiment_input/generated_pairs.csv') as f:
+with open('../data/generated_pairs.csv') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -32,8 +32,8 @@ PD_Hidden = AnalysisModel.extract_hidden_states(sent_list_PD,verb_list,theme_lis
 
 #Dump the data
 print("Dumping data")
-with open('datafile/hidden_states_'+args[1]+'_'+args[2]+'_DO.pkl','wb') as f:
+with open(f'../data/hidden_states_{args[1]}_{args[2]}_DO.pkl','wb') as f:
     pickle.dump(DO_Hidden,f)
-with open('datafile/hidden_states_'+args[1]+'_'+args[2]+'_PD.pkl','wb') as f:
+with open(f'../data/hidden_states_{args[1]}_{args[2]}_PD.pkl','wb') as f:
     pickle.dump(PD_Hidden,f)
 
