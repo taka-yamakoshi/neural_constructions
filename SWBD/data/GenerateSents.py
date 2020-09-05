@@ -7,16 +7,16 @@ args = sys.argv
 
 def GenerateDO(subject,verb,particle,recipient,theme):
     if particle == '-':
-        sentence = f'{subject} {verb_dict[verb]} {recipient} {theme}.'
+        sentence = f'{subject} {verb_dict[verb]} {recipient} {theme}'
     else:
-        sentence = f'{subject} {verb_dict[verb]} {recipient} {particle} {theme}.'
+        sentence = f'{subject} {verb_dict[verb]} {recipient} {particle} {theme}'
     return sentence
 
 def GeneratePD(subject,verb,particle,recipient,theme):
     if particle == '-':
-        sentence = f'{subject} {verb_dict[verb]} {theme} to {recipient}.'
+        sentence = f'{subject} {verb_dict[verb]} {theme} to {recipient}'
     else:
-        sentence = f'{subject} {verb_dict[verb]} {theme} {particle} to {recipient}.'
+        sentence = f'{subject} {verb_dict[verb]} {theme} {particle} to {recipient}'
     return sentence
 
 
