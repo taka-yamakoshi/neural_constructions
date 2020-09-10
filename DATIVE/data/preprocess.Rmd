@@ -1,0 +1,97 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+pairs = read_csv('./verblists.csv') %>%
+  mutate(plural = !is.na(`plural recipent`)) %>%
+  select(-`extra theme`, -`plural recipent`, -POSSESSIVE, -notes) %>%
+  gather(themetype, theme, def_1,def_2,indef_3,indef_4,something_5) %>%
+  separate(themetype, into=c('theme_type', 'theme_id'), remove = T) %>%
+  mutate(takes_female = grepl("her", theme))
+
+```
+
+```{r}
+recipient_pronouns <- c('her', 'him')
+recipient_nouns <- c('man', 'woman')
+definites <- recipient_nouns %>% map_chr(~paste0('the ', .x))
+indefinites <- recipient_nouns %>% map_chr(~paste0('a ', .x))
+
+definite_lengtheners <- c('from work', 'wearing the hat') %>%
+  map_chr(~paste0('who was ', .x)) %>%
+  c('from work', 'wearing the hat')
+
+indefinite_lengtheners <- c('from work', 'wearing a hat') %>%
+  map_chr(~paste0('who was ', .x)) %>%
+   c('from work', 'wearing a hat') 
+
+longdefinites <- cross2(definites, definite_lengtheners) %>% 
+  map_chr(paste, collapse = " ")
+
+longindefinites <- cross2(indefinites, indefinite_lengtheners) %>% 
+  map_chr(paste, collapse = " ")
+```
+
+Put all recipients together
+
+```{r}                         
+recipients <- bind_rows(
+  data.frame(recipient = recipient_pronouns, 
+             recipient_id = rep('pronoun', length(recipient_pronouns))),
+  data.frame(recipient = definites, 
+             recipient_id = rep('shortDefinite', length(definites))),
+  data.frame(recipient = indefinites, 
+             recipient_id = rep('shortIndefinite', length(indefinites))),
+  data.frame(recipient = longdefinites, 
+             recipient_id = rep('longDefinite', length(longdefinites))),
+  data.frame(recipient = longindefinites, 
+             recipient_id = rep('longIndefinite', length(longindefinites)))
+) %>% 
+  mutate(plural = F) %>%
+  bind_rows(
+    data.frame(recipient = c('them', 'the team', 'a team', 
+                             'the team from work', 'a team from work'), 
+               recipient_id = c('pronoun', 'shortDefinite','shortIndefinite',
+                                'longDefinite','longIndefinite'),
+               plural = rep(c(T), 5))
+  ) 
+```
+
+```{r}
+female_names = c('Mary', 'Linda', 'Maria', 'Alice')
+male_names = c('John', 'Bob', 'Michael', 'Juan')
+subjects = data.frame(subject = c(female_names, female_names, male_names),
+                      takes_female = c(rep(T, length(female_names)),
+                                       rep(F, length(female_names) + length(male_names))))
+```
+
+```{r}
+out <- pairs %>%
+  merge(recipients, by = c('plural')) %>%
+  merge(subjects, by = c('takes_female')) %>%
+  # remove slightly confusing 'she gave her' and 'he gave him' sentences
+  filter(!(subject %in% female_names & recipient == 'her')) %>%
+  filter(!(subject %in% male_names & recipient == 'him')) %>%
+  unite(DOsentence, subject, verb, recipient, theme, sep = ' ', remove = F) %>%
+  mutate(to = 'to') %>%
+  unite(PDsentence, subject, verb, theme, to, recipient, sep = ' ', remove = T) %>% 
+  group_by(verb_id,theme_id,recipient_id) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  arrange(classification, verb_id, theme_id, recipient_id) %>%
+  mutate(i = row_number(),
+         trial_set = floor(((2531 * i) %% 5000) / 50))
+
+write_csv(out, './generated_pairs.csv')
+```
+
+```{r}
+write(jsonlite::toJSON(out), file = './generated_pairs.json')
+write(jsonlite::toJSON(out %>% ungroup() %>% sample_n(50)), file = './example_trials.json')
+```
