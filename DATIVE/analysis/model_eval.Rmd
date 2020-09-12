@@ -22,6 +22,7 @@ d <- read_csv('../data/data_cleaned.csv') %>%
   group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%
   summarize(human = mean(DOpreference)/100) %>%
   left_join(read_csv('../textfile/generated_pairs_latest.csv') %>% 
+              mutate(theme_type = fct_collapse(theme_type, indef = c('indef', 'something'), def = c('def'))) %>%
               select(-DO_prob, -PD_prob, -XLNet_ratio, -BehavDOpreference)) %>%
   rename(`GPT2-large_ratio` = GPT2_large_ratio,
          `LSTM-large_ratio` = Big_LSTM_ratio) %>%
@@ -35,7 +36,7 @@ d <- read_csv('../data/data_cleaned.csv') %>%
 ```{r}
 d %>%
   group_by(model, classification) %>%
-  tidyboot_mean(predicted, nboot = 100) %>%
+  tidyboot_mean(predicted, nboot = 100, na.rm = T) %>%
   ggplot(aes(x = classification, y = empirical_stat)) +
     geom_bar(stat = 'identity') +
     geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
@@ -53,9 +54,9 @@ verbeval.toplot <- d %>%
   summarize(human = mean(human),
             predicted = mean(predicted)) %>%
   group_by(model) %>%
-  mutate(correlation = cor(human, predicted, method = 'pearson')) %>%
+  mutate(correlation = cor(human, predicted, method = 'spearman')) %>%
   ungroup() %>%
-  mutate(model = fct_reorder(model, correlation)) 
+  mutate(model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large', 'LSTM'))
 
 cortext <- verbeval.toplot %>%
   group_by(classification,  model) %>%
@@ -74,7 +75,7 @@ verbeval.toplot %>%
     guides(colour = guide_legend(override.aes = list(size=2), title = 'verb class')) +
     theme(aspect.ratio = 1, legend.position = 'top')
 
-ggsave('../figures/verb_bias_scatter.pdf', width = 8, height=3)
+ggsave('../../neural_constructions_tex/figs/verb_bias_scatter.pdf', width = 8, height=3)
 ```
 
 ```{r}
@@ -88,9 +89,9 @@ panelA <- read_csv('../data/data_cleaned.csv') %>%
   ggplot(aes(x = recipient_id, y = empirical_stat)) +
     geom_bar(stat = 'identity') +
     geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
-    labs(x = '', y = 'average DO preference') +
+    labs(x = '', y = 'DO preference') +
     guides(x = guide_axis(angle = 90)) +
-    ylim(-30,30) +
+    ylim(-30,5) +
     facet_grid( ~ model) +
     scale_fill_brewer(direction = -1) +
     theme_few() +
@@ -103,7 +104,7 @@ conditioneval.toplot <- d %>%
   tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%
   ungroup() %>%
   mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),
-         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large'))
+         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large', 'LSTM'))
 
 panelB <- conditioneval.toplot %>%
   ggplot(aes(x = recipient_id, y = empirical_stat)) +
@@ -118,7 +119,7 @@ panelB <- conditioneval.toplot %>%
       theme(aspect.ratio = 1) 
 
 ggarrange(panelA, panelB, widths = c(1,4))
-ggsave("../figures/condition_evaluation.pdf", width = 15, height = 5, unit = 'in')
+ggsave("../../neural_constructions_tex/figs/condition_evaluation.pdf", width = 7, height = 2.4, unit = 'in')
 ```
 
 # Sanity checks
@@ -184,5 +185,5 @@ panelB <- conditioneval.toplot %>%
       theme(aspect.ratio = 1) 
 
 ggarrange(panelA, panelB, widths = c(1,4))
-ggsave("../figures/condition_evaluation_by_theme.pdf", width = 20, height = 8, unit = 'in')
+ggsave("../../neural_constructions_tex/figs/condition_evaluation_by_theme.pdf", width = 20, height = 8, unit = 'in')
 ```

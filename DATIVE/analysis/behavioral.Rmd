@@ -6,6 +6,7 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(tidyboot)
+library(lme4)
 library(ggthemes)
 ```
 
@@ -78,6 +79,12 @@ d_judgements <- d_raw %>%
 write_csv(d_judgements, '../data/data_cleaned.csv')
 ```
 
+```{r}
+cat(d_judgements %>% pull(participant_id) %>% unique() %>% length(), 'participants')
+cat(d_judgements %>% pull(participant_id) %>% length(), 'judgements')
+
+```
+
 due to dropout and catch trial failures, we didn't get the same number of participants for all of the trial sets.
 
 however, every set was seen at least 5 times, and the average was 10 times.
@@ -102,25 +109,35 @@ d_judgements %>%
     theme_few() 
 ```
 
+```{r}
+library(lmerTest)
+d_judgements %>%
+  lmer(DOpreference ~ classification + (1 + classification| participant_id),
+       data = .,
+      control = lmerControl(calc.derivs = FALSE)) %>%
+  summary()
+```
+
 Break out by recipient_id.
 
 ```{r}
 d_judgements %>%
-  filter(classification == 'alternating') %>%
-  group_by(recipient_id) %>%
-  tidyboot_mean(DOpreference - 50, nboot = 10) %>%
+  group_by(classification, theme_type, recipient_id) %>%
+  tidyboot_mean(DOpreference - 50, nboot = 1000) %>%
   ungroup() %>%
-  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat)) %>%
-  ggplot(aes(x = recipient_id,  y = empirical_stat)) +
-    geom_bar(stat = 'identity') +
-    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+  mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),
+        classification = fct_relevel(classification, 'non-alternating')) %>%
+  ggplot(aes(x = recipient_id,  y = empirical_stat, fill = theme_type)) +
+    geom_bar(stat = 'identity', position=position_dodge(width = 0.9)) +
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0, position=position_dodge(width = 0.9)) +
     labs(x = 'recipient type', y = 'average DO preference') +
     guides(x = guide_axis(angle = 90)) +
-    scale_fill_brewer(direction = -1) +
+    scale_fill_colorblind()+
+    facet_wrap(~classification) +
     theme_few() +
-    theme(aspect.ratio = 1)
+    theme(aspect.ratio = 1, legend.position = 'top')
 
-ggsave("recipient_type.pdf")
+ggsave("../../neural_constructions_tex/figs/appendix_recipient_type.pdf", width = 3.5, height=3.5, units = 'in')
 ```
 
 Compute statistics
@@ -148,7 +165,7 @@ Break out by verb.
 d_judgements %>%
   filter(recipient_id == 'pronoun') %>%
   group_by(verb, classification) %>%
-  tidyboot_mean(DOpreference, nboot = 100) %>%
+  tidyboot_mean(DOpreference, nboot = 1) %>%
   group_by(verb) %>%
   mutate(grand_avg = mean(empirical_stat)) %>%
   ungroup() %>%
@@ -162,7 +179,7 @@ d_judgements %>%
     theme_few() +
     theme(aspect.ratio = 1/10, legend.position = 'top')
 
-ggsave("../figures/verbs_aggregated.pdf", width = 10, height = 3, units = 'in')
+ggsave("../../neural_constructions_tex/figs/verbs_aggregated.pdf", width = 10, height = 3, units = 'in')
 ```
 
 Cross-validate rater agreement for verb ranking?
@@ -170,9 +187,8 @@ Cross-validate rater agreement for verb ranking?
 ```{r}
 smp_size <- floor(0.5 * nrow(d_judgements))
 
-map_dbl(1:100, ~ {
+agreement.out <- map_dbl(1:100, ~ {
   d_judgements %>%
-    #filter(recipient_id == 'pronoun') %>%
     sample_frac(1) %>%
     mutate(split = row_number() < smp_size) %>%
     group_by(verb, split) %>%
@@ -181,8 +197,29 @@ map_dbl(1:100, ~ {
     ungroup() %>%
     summarize(c = cor(`TRUE`, `FALSE`, method = 'spearman')) %>%
     pull(c)
-}) %>%
-  qplot() + theme_few()
+}) 
+
+cat(mean(agreement.out))
+```
+
+### Look at frequency effects
+
+```{r}
+d_judgements %>%
+  filter(recipient_id == 'pronoun') %>%
+  group_by(verb, frequency_rank, classification) %>%
+  tidyboot_mean(DOpreference, nboot = 100) %>%
+  ggplot(aes(x = frequency_rank, y = empirical_stat, color = classification)) +
+    geom_point(alpha = 0.5) +
+    geom_hline(yintercept = 50, linetype = 'dotted') +
+    geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
+    geom_smooth(method = 'lm') +
+    labs(x = 'frequency (rank)', y = 'average DO preference') +
+    guides(x = guide_axis(n.dodge = 1, angle = 90, check.overlap = T)) +
+    theme_few() +
+    theme(legend.position = 'top')
+
+ggsave("frequency-effects.pdf")
 ```
 
 ## Sanity checks
