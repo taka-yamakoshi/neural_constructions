@@ -39,7 +39,7 @@ class ExtractHiddenModel:
         elif self.model_name == 'gpt2' or self.model_name == 'gpt2-large':
             from transformers import GPT2Tokenizer, GPT2LMHeadModel
             self.tokenizer = GPT2Tokenizer.from_pretrained(self.model_name)
-            self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
+            self.model = GPT2LMHeadModel.from_pretrained(self.model_name, output_hidden_states=True, output_attentions=True)
             if torch.cuda.is_available():
                 self.model.to('cuda')
             self.model.eval()
