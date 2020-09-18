@@ -11,13 +11,13 @@ In addition to this, the following preparation is needed for the ngram and the L
 
 For `ngram`, you need `.arpa` file.  For details as to how to create `.arpa`, see [kenlm](https://github.com/kpu/kenlm).  We created `.arpa` file using the 80M Wikipedia data provided on [LM_syneval](https://github.com/TalLinzen/LM_syneval), which was also used for training the smaller LSTM we used for evaluation.
 
-For `lstm`, clone [colorlessgreenRNNs](https://github.com/facebookresearch/colorlessgreenRNNs), and place `src/language_models/model.py` in `Models`.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from [here](https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src), and put it in the `DATIVE/data` directory.
+For `lstm`, clone [colorlessgreenRNNs](https://github.com/facebookresearch/colorlessgreenRNNs), and place `src/language_models/model.py` in this directory.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from [here](https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src), and put it in the `Models` directory.
 
-For `lstm-large`, create `lm_1b_data` directory under `DATIVE/data`.  Then download data files from [here](https://github.com/tensorflow/models/tree/master/research/lm_1b), and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `Models`. 
+For `lstm-large`, create `lm_1b_data` directory under `Models`.  Then download data files from [here](https://github.com/tensorflow/models/tree/archive/research/lm_1b), and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `Models`. 
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
 ```{python3}
-python CalcSentProbs.py lstm-large --pbtxt ../data/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../data/lm_1b_data/ckpt-*' --vocab_file ../data/lm_1b_data/vocab-2016-09-10.txt
+python CalcSentProbs.py lstm-large --pbtxt ../../Models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../Models/lm_1b_data/ckpt-*' --vocab_file ../../Models/lm_1b_data/vocab-2016-09-10.txt
 ```
 
 The output will be added to `DATIVE/data/generated_pairs_with_results.csv`, which already contains the results we used for the paper.
@@ -34,7 +34,7 @@ For LSTMs, you need the same preparation as above.
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
 ```{python3}
-python ExtractHidden.py lstm-large --pbtxt lm_1b_data/graph-2016-09-10.pbtxt --ckpt 'lm_1b_data/ckpt-*' --vocab_file lm_1b_data/vocab-2016-09-10.txt
+python ExtractHidden.py lstm-large --pbtxt ../../Models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../Models/lm_1b_data/ckpt-*' --vocab_file ../../Models/lm_1b_data/vocab-2016-09-10.txt
 ```
 
 The output will be stored in `datafile` directory, and will be used for the ridge regression described below.
