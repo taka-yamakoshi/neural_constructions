@@ -1,26 +1,33 @@
 # Analysis of DATIVE dataset
+
+## Setting up the models
+
+The transformer models we consider require installing [Hugging Face](https://github.com/huggingface/transformers) API. 
+
+The following preparation steps are needed for the ngram model and the LSTMs.
+
+For `ngram`, you need the `.arpa` file.  For details as to how to create `.arpa`, see [kenlm](https://github.com/kpu/kenlm).  We created `.arpa` file using the 80M Wikipedia data provided on [LM_syneval](https://github.com/TalLinzen/LM_syneval), which was also used for training the smaller LSTM we used for evaluation.
+
+For `lstm`, clone [colorlessgreenRNNs](https://github.com/facebookresearch/colorlessgreenRNNs), and place `src/language_models/model.py` in this directory.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from [here](https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src), and put it in the `models` directory.
+
+For `lstm-large`, create an empty `lm_1b_data` directory under `Models`.  Then follow the installation steps described in the [lm_1b](https://github.com/tensorflow/models/tree/archive/research/lm_1b) README, placing all data files inside `lm_1b_data`.  
+
 ## Calculate sentence probabilities
 
 ```{python3}
 python CalcSentProbs.py [model_name]
 ```
-is the basic command for calculating sentence probabilities.
-`[model_name]` can be one of the following: `ngram`, `lstm`, `lstm-large`, `bert`, `gpt2`, and `gpt2-large`.
+is the main script for calculating sentence probabilities.
 
-In addition to this, the following preparation is needed for the ngram and the LSTMs.
-
-For `ngram`, you need `.arpa` file.  For details as to how to create `.arpa`, see [kenlm](https://github.com/kpu/kenlm).  We created `.arpa` file using the 80M Wikipedia data provided on [LM_syneval](https://github.com/TalLinzen/LM_syneval), which was also used for training the smaller LSTM we used for evaluation.
-
-For `lstm`, clone [colorlessgreenRNNs](https://github.com/facebookresearch/colorlessgreenRNNs), and place `src/language_models/model.py` in this directory.  In addition, download the checkpoint file, `hidden650_batch128_dropout0.2_lr20.0.pt` from [here](https://github.com/facebookresearch/colorlessgreenRNNs/tree/master/src), and put it in the `Models` directory.
-
-For `lstm-large`, create `lm_1b_data` directory under `Models`.  Then download data files from [here](https://github.com/tensorflow/models/tree/archive/research/lm_1b), and place them inside `lm_1b_data`.  In addition, clone the above repository and place `data_utils.py` in `Models`. 
+`[model_name]` can be one of the following models: `ngram`, `lstm`, `lstm-large`, `bert`, `gpt2`, and `gpt2-large`.
 
 In order to run the code for `lstm-large`, you need to use flags in the following way.
+
 ```{python3}
-python CalcSentProbs.py lstm-large --pbtxt ../../Models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../Models/lm_1b_data/ckpt-*' --vocab_file ../../Models/lm_1b_data/vocab-2016-09-10.txt
+python CalcSentProbs.py lstm-large --pbtxt ../../models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../models/lm_1b_data/ckpt-*' --vocab_file ../../models/lm_1b_data/vocab-2016-09-10.txt
 ```
 
-The output will be added to `DATIVE/data/generated_pairs_with_results.csv`, which already contains the results we used for the paper.
+The output will be added as a new column of `DATIVE/data/generated_pairs_with_results.csv`, which contains the results we used for the paper.
 
 ## Extract hidden states
 ```{python3}
@@ -32,12 +39,12 @@ is the basic command for extracting hidden states.
 
 For LSTMs, you need the same preparation as above.
 
-In order to run the code for `lstm-large`, you need to use flags in the following way.
+Again, in order to run the code for `lstm-large`, you need to use flags in the following way.
 ```{python3}
-python ExtractHidden.py lstm-large --pbtxt ../../Models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../Models/lm_1b_data/ckpt-*' --vocab_file ../../Models/lm_1b_data/vocab-2016-09-10.txt
+python ExtractHidden.py lstm-large --pbtxt ../../models/lm_1b_data/graph-2016-09-10.pbtxt --ckpt '../../models/lm_1b_data/ckpt-*' --vocab_file ../../models/lm_1b_data/vocab-2016-09-10.txt
 ```
 
-The output will be stored in `datafile` directory, and will be used for the ridge regression described below.
+The output will be stored in `datafile` directory, and is used for the ridge regression described below.
 
 ## Ridge regression
 ```{python3}
@@ -50,6 +57,7 @@ is the basic command for running the ridge regression.
 
 The output will be stored in `datafile` directory.
 
-## Produce figures
+## Reproduce figures and statistical results
+
 Figure 1 is created by `behavioral.Rmd`, and Figures 2 and 3 are created by `model_eval.Rmd`.
-`PlotReg.py` is a sample code for plotting the results for ridge regression.
+`PlotReg.py` is sample code for plotting the results for ridge regression.
