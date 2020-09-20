@@ -10,7 +10,7 @@ from models.CalcSentProbsModel import CalcSentProbsModel
 args = sys.argv
 
 #Load sentences
-with open('../data/PrunedGeneratedSentsSWBD.csv','r') as f:
+with open('../data/generated_sents_cleaned.csv','r') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
@@ -19,12 +19,13 @@ with open('../data/PrunedGeneratedSentsSWBD.csv','r') as f:
 sent_list_DO = [row[head.index('DOsentence')] for row in text]
 sent_list_PD = [row[head.index('PDsentence')] for row in text]
 
-
 #Calculate probability
 AnalysisModel = CalcSentProbsModel(args[1])
 AnalysisModel.load_model()
+
 print("Calculating DO")
 DO_prob = AnalysisModel.calculate_sent_probs(sent_list_DO)
+
 print("Calculating PD")
 PD_prob = AnalysisModel.calculate_sent_probs(sent_list_PD)
 ratio = DO_prob - PD_prob
@@ -38,13 +39,14 @@ with open(f'../data/SWBD_{args[1]}_PD.pkl','wb') as f:
 with open(f'../data/SWBD_{args[1]}_ratio.pkl','wb') as f:
     pickle.dump(ratio,f)
 
-with open('../data/PrunedGeneratedSentsSWBDResults.csv','r') as f:
+# add column
+with open('../data/generated_sents_cleaned_results.csv','r') as f:
     reader = csv.reader(f)
     file = [row for row in reader]
     head = file[0]
     text = file[1:]
 
-with open('../data/PrunedGeneratedSentsSWBDResults.csv','w') as f:
+with open('../data/generated_sents_cleaned_results.csv','w') as f:
     if f'{args[1]}_ratio' in head:
         writer = csv.writer(f)
         writer.writerow(head)
