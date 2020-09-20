@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import csv
 import sys
 sys.path.append('../..')
-from Models.CalcSentProbsModel import CalcSentProbsModel
+from models.CalcSentProbsModel import CalcSentProbsModel
 
 args = sys.argv
 

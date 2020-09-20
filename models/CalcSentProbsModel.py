@@ -249,6 +249,6 @@ class CalcSentProbsModel:
             sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(allow_soft_placement=True))
             sess.run('save/restore_all', {'save/Const:0': self.ckpt_file})
             sess.run(t['states_init'])
-        vocab = lm_1b_utils.CharsVocabulary(self.vocab_file, self.MAX_WORD_LEN)
+        vocab = data_utils.CharsVocabulary(self.vocab_file, self.MAX_WORD_LEN)
         return sess, t, vocab
 
