@@ -13,7 +13,7 @@ library(ggthemes)
 Import data
 
 ```{r}
-d_raw <- read_csv('../data/dataFromMongo.csv')
+d_raw <- read_csv('../data/experiment_output/dataFromMongo.csv')
 ```
 
 Implement exclusion criteria
@@ -76,7 +76,7 @@ d_judgements <- d_raw %>%
          set_id = setid) %>%
   select(-response, -responses,-stimulus_type,-iterationName,-highValueMeans)
 
-write_csv(d_judgements, '../data/data_cleaned.csv')
+write_csv(d_judgements, '../data/experiment_output/data_cleaned.csv')
 ```
 
 ```{r}
@@ -140,23 +140,32 @@ d_judgements %>%
 ggsave("../../neural_constructions_tex/figs/appendix_recipient_type.pdf", width = 3.5, height=3.5, units = 'in')
 ```
 
-Compute statistics
+Compute statistics. We code 'pronoun' as a kind of definite. The maximal random effect structure containing random slopes for theme_type did not converge.
 
 ```{r}
 library(lme4)
-d_judgements %>%
-  mutate(recipient_id = case_when(recipient_id == 'shortDefinite' ~ 'short_definite',
-                                  recipient_id == 'longDefinite' ~ 'long_definite',
-                                  recipient_id == 'shortIndefinite' ~ 'short_indefinite',
-                                  recipient_id == 'longIndefinite' ~ 'long_indefinite',
-                                  recipient_id == 'pronoun' ~ 'extrashort_definite')) %>%
-  separate(recipient_id, into = c('recipient_length', 'recipient_definiteness'), sep='_') %>%
+library(lmerTest)
+library(broom.mixed)
+human.lme <- d_judgements %>%
+  mutate(recipient_id = case_when(
+    recipient_id == 'shortDefinite' ~ 'short_definite',
+    recipient_id == 'longDefinite' ~ 'long_definite',
+    recipient_id == 'shortIndefinite' ~ 'short_indefinite',
+    recipient_id == 'longIndefinite' ~ 'long_indefinite',
+    recipient_id == 'pronoun' ~ 'extrashort_definite')
+  ) %>%
+  separate(recipient_id, 
+           into = c('recipient_length', 'recipient_definiteness'), 
+           sep='_') %>%
   lmer(DOpreference ~ recipient_length + recipient_definiteness + theme_type
                       + (1 + recipient_length + recipient_definiteness| participant_id) 
                       + (1 + recipient_length + recipient_definiteness| verb), 
        data = .,
-      control = lmerControl(calc.derivs = FALSE)) %>%
-  summary()
+      control = lmerControl(calc.derivs = FALSE)) 
+
+human.lme %>%
+  tidy() %>%
+  xtable()
 ```
 
 Break out by verb.

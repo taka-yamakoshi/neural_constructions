@@ -7,6 +7,10 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(tidyboot)
+library(lme4)
+library(lmerTest)
+library(broom.mixed)
+library(xtable)
 library(ggpubr)
 library(ggthemes)
 
@@ -21,12 +25,10 @@ fit_logistic <- function(d) {
 d <- read_csv('../data/data_cleaned.csv') %>%
   group_by(theme_type, recipient_id, verb, theme_id, frequency_rank,classification) %>%
   summarize(human = mean(DOpreference)/100) %>%
-  left_join(read_csv('../textfile/generated_pairs_latest.csv') %>% 
-              mutate(theme_type = fct_collapse(theme_type, indef = c('indef', 'something'), def = c('def'))) %>%
-              select(-DO_prob, -PD_prob, -XLNet_ratio, -BehavDOpreference)) %>%
-  rename(`GPT2-large_ratio` = GPT2_large_ratio,
-         `LSTM-large_ratio` = Big_LSTM_ratio) %>%
-  gather(model, predicted, ends_with("_ratio")) #%>%
+  left_join(read_csv('../data/generated_pairs_with_results.csv') %>% 
+              mutate(theme_type = fct_collapse(theme_type, indef = c('indef', 'something'), def = c('def')))) %>%
+  gather(model, predicted, ends_with("_ratio")) %>%
+  ungroup()
   # group_by(model) %>%
   # do(mutate(., predicted = fit_logistic(.)))
 ```
@@ -104,7 +106,7 @@ conditioneval.toplot <- d %>%
   tidyboot::tidyboot_mean(predicted, nboot = 10, na.rm = T) %>%
   ungroup() %>%
   mutate(recipient_id = fct_reorder(recipient_id, empirical_stat),
-         model = fct_relevel(model, 'human', 'GPT2-large', 'GPT2', 'BERT', 'LSTM-large', 'LSTM'))
+         model = fct_relevel(model, 'gpt2-large', 'gpt2', 'bert', 'lstm-large', 'lstm'))
 
 panelB <- conditioneval.toplot %>%
   ggplot(aes(x = recipient_id, y = empirical_stat)) +
@@ -112,7 +114,7 @@ panelB <- conditioneval.toplot %>%
     geom_errorbar(aes(ymin = ci_lower, ymax=ci_upper), width = 0) +
       labs(x = '', y = '') +
       guides(x = guide_axis(angle = 90)) +
-      facet_grid( ~ model) +
+      facet_grid( ~ model, scales = 'free') +
       theme_few() +
       guides() +
       scale_fill_brewer(direction = -1) +
@@ -122,20 +124,39 @@ ggarrange(panelA, panelB, widths = c(1,4))
 ggsave("../../neural_constructions_tex/figs/condition_evaluation.pdf", width = 7, height = 2.4, unit = 'in')
 ```
 
-# Sanity checks
+# Regressions for each model (Appendix C)
 
 ```{r}
-read_csv('../textfile/generated_pairs_new_lstm.csv') %>% 
-    select(-DO_prob, -PD_prob,  -BehavDOpreference) %>% 
-    rename(LSTM_new_ratio= LSTM_ratio_new) %>%
-    gather(model, predicted, ends_with("_ratio")) %>%
-    ggplot(aes(x=predicted)) +
-      geom_histogram() +
-      geom_vline(xintercept = 0)+
-      facet_grid(~ model) +
-      labs(x = 'predicted PD/DO ratio') +
-      theme_few()
+d %>% 
+  separate(model, into = c('model', 'garbage'), sep = '_') %>%
+  filter(classification == 'alternating') %>%
+  mutate(recipient_id = case_when(
+    recipient_id == 'shortDefinite' ~ 'short_definite',
+    recipient_id == 'longDefinite' ~ 'long_definite',
+    recipient_id == 'shortIndefinite' ~ 'short_indefinite',
+    recipient_id == 'longIndefinite' ~ 'long_indefinite',
+    recipient_id == 'pronoun' ~ 'extrashort_definite')) %>%
+  separate(recipient_id, 
+           into = c('recipient_length', 'recipient_definiteness'), 
+           sep='_') %>%
+  group_by(model) %>%
+  do(fit = tidy(lmer(predicted ~ recipient_length + recipient_definiteness + theme_type
+                      + (1 + recipient_length + recipient_definiteness| verb), 
+       data = .,
+      control = lmerControl(optimizer = 'bobyqa', calc.derivs = FALSE)))) %>%
+  unnest(fit) %>%
+  filter(effect == 'fixed') %>%
+  select(-effect, -group, -std.error) %>%
+  mutate(level = case_when(p.value < 0.001 ~ '***',
+                           p.value < 0.01 ~ '**',
+                           p.value < 0.05 ~ '*',
+                           TRUE ~ 'n.s.'),
+         p.value = format(p.value, scientific = TRUE, digits = 3)) %>%
+  xtable()
+
 ```
+
+# Sanity checks
 
 Split out conditions by theme definiteness also
 
