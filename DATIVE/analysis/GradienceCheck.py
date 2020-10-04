@@ -1,69 +1,61 @@
 import pickle
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-from plotly.colors import n_colors
 import matplotlib.pyplot as plt
-from scipy.stats import spearmanr,pearsonr,beta,kurtosis
-from sklearn.linear_model import LinearRegression
+from scipy.stats import gaussian_kde
 import seaborn as sns
-sns.set()
 import sys
 sys.path.append('../..')
 args = sys.argv
 
 raw_data  = pd.read_csv('../data/experiment_output/data_cleaned.csv')
-bahav_data = np.array([raw_data.query(f'verb_id == {id+1} and recipient_id == "pronoun"')['DOpreference'].to_numpy().astype(float) for id in range(200)])
+behav_data_pronoun = np.array([raw_data.query(f'verb_id == {id+1} and recipient_id == "pronoun"')['DOpreference'].to_numpy().astype(float) for id in range(200)])
+ave_behav = np.array([raw_data.query(f'verb_id == {id+1} and recipient_id == "pronoun"')['DOpreference'].mean() for id in range(200)])
+sorted_verb_id = np.argsort(ave_behav)
 
 verb_data = pd.read_csv('../data/experiment_input/verblists.csv')
 verb_list = [list(verb_data.query(f'verb_id == {id+1}')['verb'])[0] for id in range(200)]
 
-#Fit beta distribution and calculate kurtosis
-beta_params = np.empty((200,2))
-kurtosis_list = np.empty(200)
-for verb_id,verb_behav in enumerate(bahav_data):
-    verb_behav[verb_behav==0] = 1
-    verb_behav[verb_behav==100] = 99
-    verb_behav = verb_behav/100
-    a,b,loc,scale = beta.fit(verb_behav,floc=0,fscale=1)
-    beta_params[verb_id] = [a,b]
-    print(a,b)
-    kurtosis_list[verb_id] = kurtosis(verb_behav)
-print(f'Verbs with both parameters>1: {np.sum([row[0]>1 and row[1]>1 for row in beta_params])}')
-print(f'Verbs with kurtosis>0: {np.sum(kurtosis_list>0)}')
-
-#Violin plot
 color_list = sns.color_palette('Set2')
-fig = plt.figure(figsize=(10,10),dpi=150)
-for verb_id,verb_behav in enumerate(bahav_data[:100]):
-    plt.subplot(10,10,verb_id+1)
-    if beta_params[verb_id][0]>1 and beta_params[verb_id][1]>1:
-        sns.violinplot(verb_behav,color=color_list[0])
-    elif beta_params[verb_id][0]<1 and beta_params[verb_id][1]<1:
-        sns.violinplot(verb_behav,color=color_list[1])
+fig = plt.figure(figsize=(30,15),dpi=150)
+ymax_list = [40,30,30,20,20,20,20,20,20,50]
+for pos,id in enumerate(sorted_verb_id):
+    ax1 = fig.add_subplot(10,20,pos+1)
+    ax2 = ax1.twinx()
+    kde_model = gaussian_kde(behav_data_pronoun[id],bw_method=0.5)
+    x_grid = np.linspace(0,101,num=500)
+    if id < 100:
+        ax1.hist(behav_data_pronoun[id],color=color_list[1],alpha=0.5,bins=np.arange(0,101,10))
+        ax2.plot(x_grid,kde_model(x_grid), color=color_list[1],linewidth=2)
     else:
-        sns.violinplot(verb_behav,color=color_list[2])
-    plt.title(verb_list[verb_id])
-    if verb_id < 90:
-        plt.xticks([0,50,100],[])
-    else:
-        plt.xticks([0,50,100],[0,50,100],fontsize=8,rotation=90)
-fig.subplots_adjust(hspace=1,wspace=1)
-fig.savefig('../non-alternating.png')
+        ax1.hist(behav_data_pronoun[id],color=color_list[0],alpha=0.5,bins=np.arange(0,101,10))
+        ax2.plot(x_grid,kde_model(x_grid), color=color_list[0],linewidth=2)
 
-fig = plt.figure(figsize=(10,10),dpi=150)
-for verb_id,verb_behav in enumerate(bahav_data[100:]):
-    plt.subplot(10,10,verb_id+1)
-    if beta_params[verb_id+100][0]>1 and beta_params[verb_id+100][1]>1:
-        sns.violinplot(verb_behav,color=color_list[0])
-    elif beta_params[verb_id+100][0]<1 and beta_params[verb_id+100][1]<1:
-        sns.violinplot(verb_behav,color=color_list[1])
+    ax1.set_xticks([0,50,100])
+    if pos < 180:
+        ax1.set_xticklabels([])
     else:
-        sns.violinplot(verb_behav,color=color_list[2])
-    plt.title(verb_list[verb_id+100])
-    if verb_id < 90:
-        plt.xticks([0,50,100],[])
+        ax1.set_xticklabels([0,50,100],fontsize=8,rotation=90)
+    ymax = ymax_list[pos//20]
+    ax1.set_ylim(0,ymax)
+    if pos%20==0:
+        ax1.set_yticks([0,int(ymax/2),ymax])
+        ax1.set_yticklabels([0,int(ymax/2),ymax])
     else:
-        plt.xticks([0,50,100],[0,50,100],fontsize=8,rotation=90)
-fig.subplots_adjust(hspace=1,wspace=1)
-fig.savefig('../alternating.png')
+        ax1.set_yticks([])
+    ax2.set_ylim([0,0.05])
+    if pos%20==19:
+        ax2.set_yticks([0,0.025,0.05])
+        ax2.set_yticklabels([0,0.025,0.05])
+    else:
+        ax2.set_yticks([])
+    plt.title(verb_list[id],fontsize=12)
+    ax1.spines['top'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['left'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['left'].set_visible(False)
+    ax2.spines['bottom'].set_visible(False)
+fig.subplots_adjust(hspace=0.75,bottom=0.05,top=0.95,left=0.05,right=0.95)
+fig.savefig('../raw_dist.png')
