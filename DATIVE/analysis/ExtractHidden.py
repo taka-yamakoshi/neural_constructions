@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import csv
 import sys
 sys.path.append('../..')
-from Models.ExtractHiddenModel import ExtractHiddenModel
+from models.ExtractHiddenModel import ExtractHiddenModel
 
 args = sys.argv
 
