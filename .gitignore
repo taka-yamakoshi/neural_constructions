@@ -1,0 +1,5 @@
+.DS_Store
+*.nb.html
+node_modules
+.RHistory
+.Rproj.user
